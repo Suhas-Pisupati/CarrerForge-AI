@@ -1,0 +1,58 @@
+.container{
+width:80%;
+margin:auto;
+font-family:Arial;
+text-align:center;
+}
+
+.title{
+color:#2c3e50;
+margin-top:20px;
+}
+
+.upload-box{
+margin-top:40px;
+}
+
+button{
+padding:10px 20px;
+background:#3498db;
+color:white;
+border:none;
+margin-left:10px;
+cursor:pointer;
+border-radius:5px;
+}
+
+button:hover{
+background:#2980b9;
+}
+
+.results{
+margin-top:40px;
+text-align:left;
+}
+
+.job-card{
+border:1px solid #ccc;
+padding:15px;
+margin-top:10px;
+border-radius:5px;
+}
+/* ==========================================
+   AUTHENTICATION LOADING
+========================================== */
+
+.auth-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f5f7fb;
+
+  color: #64748b;
+
+  font-size: 16px;
+  font-weight: 400;
+}

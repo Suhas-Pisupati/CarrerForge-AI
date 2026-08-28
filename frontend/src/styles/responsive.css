@@ -1,0 +1,160 @@
+/* ===========================
+   TABLETS
+=========================== */
+
+@media screen and (max-width:1024px){
+
+.container,
+.dashboard-container,
+.job-container,
+.interview-container,
+.mock-container,
+.coding-container,
+.project-guide-page,
+.project-section{
+
+    width:95%;
+    margin:auto;
+
+}
+
+}
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media screen and (max-width:768px){
+
+body{
+
+overflow-x:hidden;
+
+}
+
+/* headings */
+
+h1{
+
+font-size:30px !important;
+
+}
+
+h2{
+
+font-size:24px !important;
+
+}
+
+h3{
+
+font-size:20px !important;
+
+}
+
+/* containers */
+
+.dashboard-container,
+.job-container,
+.interview-container,
+.mock-container,
+.coding-container,
+.project-section,
+.project-guide-page{
+
+padding:15px !important;
+
+}
+
+/* cards */
+
+.project-grid,
+.job-grid,
+.skills-grid,
+.guide-grid{
+
+display:grid;
+
+grid-template-columns:1fr !important;
+
+gap:20px;
+
+}
+
+/* buttons */
+
+button{
+
+width:100%;
+
+margin-top:10px;
+
+}
+
+/* input */
+
+input,
+textarea,
+select{
+
+width:100%;
+
+}
+
+/* code editor */
+
+.editor-card textarea{
+
+height:220px;
+
+}
+
+/* tables */
+
+table{
+
+display:block;
+
+overflow-x:auto;
+
+}
+
+/* chatbot */
+
+.chat-container{
+
+height:450px;
+
+}
+
+}
+
+/* ===========================
+   SMALL MOBILE
+=========================== */
+
+@media screen and (max-width:480px){
+
+body{
+
+font-size:14px;
+
+}
+
+h1{
+
+font-size:24px !important;
+
+}
+
+.project-card,
+.guide-card,
+.question-card,
+.output-card,
+.evaluation-card{
+
+padding:15px !important;
+
+}
+
+}

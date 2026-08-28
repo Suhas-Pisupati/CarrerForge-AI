@@ -1,0 +1,1166 @@
+/* =====================================================
+   MOCK INTERVIEW
+   OLD UI DESIGN
+===================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   MAIN PAGE
+===================================================== */
+
+.mock-page {
+
+    width: 100%;
+    min-height: calc(100vh - 90px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 40px 20px;
+
+    background: #f7f9fc;
+}
+
+
+/* =====================================================
+   MAIN CONTAINER
+===================================================== */
+
+.mock-container {
+
+    width: min(92%, 760px);
+
+    margin: 0 auto;
+
+    background: #ffffff;
+
+    border-radius: 22px;
+
+    padding: 28px;
+
+    box-shadow: 0 12px 35px rgba(0,0,0,.08);
+
+    transition: .3s;
+}
+
+
+/* =====================================================
+   START PAGE
+===================================================== */
+
+.mock-start-card {
+
+    width: min(92%, 650px);
+
+    background: #ffffff;
+
+    border-radius: 22px;
+
+    padding: 28px;
+
+    box-shadow: 0 12px 35px rgba(0,0,0,.08);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+
+/* =====================================================
+   START BUTTON
+===================================================== */
+
+.start-btn {
+
+    width: 100%;
+
+    padding: 18px;
+
+    border: none;
+
+    border-radius: 16px;
+
+    background: linear-gradient(
+        135deg,
+        #4CAF50,
+        #2e7d32
+    );
+
+    color: white;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .3s;
+
+    box-shadow:
+        0 12px 30px
+        rgba(76,175,80,.28);
+}
+
+
+.start-btn:hover {
+
+    transform: translateY(-3px);
+}
+
+
+.start-btn:disabled {
+
+    opacity: .7;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =====================================================
+   INTERVIEW HEADER
+===================================================== */
+
+.mock-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+}
+
+
+.mock-header h1 {
+
+    margin: 6px 0;
+
+    font-size: 28px;
+
+    color: #1f2937;
+}
+
+
+.mock-header p {
+
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 15px;
+}
+
+
+.mock-label {
+
+    color: #4CAF50;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: .5px;
+}
+
+
+/* =====================================================
+   QUESTION COUNTER
+===================================================== */
+
+.progress-box {
+
+    min-width: 90px;
+
+    padding: 12px;
+
+    text-align: center;
+
+    background: #f3f6fa;
+
+    border-radius: 14px;
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+.progress-box strong {
+
+    font-size: 22px;
+
+    color: #2e7d32;
+
+    margin-left: 5px;
+}
+
+
+.progress-box span {
+
+    color: #6b7280;
+
+    margin-left: 3px;
+}
+
+
+/* =====================================================
+   PROGRESS
+===================================================== */
+
+.progress-track {
+
+    width: 100%;
+
+    height: 7px;
+
+    background: #e5e7eb;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    margin-bottom: 22px;
+}
+
+
+.progress-fill {
+
+    height: 100%;
+
+    background: #4CAF50;
+
+    border-radius: 20px;
+
+    transition: width .3s ease;
+}
+
+
+/* =====================================================
+   QUESTION
+===================================================== */
+
+.mock-question-card {
+
+    background: #f7f9fc;
+
+    border-radius: 18px;
+
+    padding: 22px;
+
+    margin-bottom: 22px;
+
+    line-height: 1.8;
+
+    color: #1f2937;
+}
+
+
+.question-label {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 15px;
+}
+
+
+.question-label span {
+
+    color: #4CAF50;
+
+    font-weight: 700;
+
+    font-size: 15px;
+}
+
+
+.mock-question-card h2 {
+
+    margin: 0;
+
+    font-size: 18px;
+
+    line-height: 1.7;
+
+    font-weight: 500;
+
+    color: #1f2937;
+}
+
+
+.question-hint {
+
+    margin: 15px 0 0;
+
+    color: #6b7280;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* =====================================================
+   REPLAY BUTTON
+===================================================== */
+
+.replay-btn {
+
+    border: none;
+
+    padding: 9px 14px;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: #2e7d32;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    box-shadow: 0 3px 10px rgba(0,0,0,.06);
+
+    transition: .3s;
+}
+
+
+.replay-btn:hover {
+
+    transform: translateY(-2px);
+
+    background: #eef8f0;
+}
+
+
+/* =====================================================
+   ANSWER CARD
+===================================================== */
+
+.answer-card {
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    padding: 0;
+
+    margin-bottom: 22px;
+}
+
+
+.answer-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 10px;
+}
+
+
+.answer-header h3 {
+
+    margin: 0;
+
+    font-size: 18px;
+
+    color: #1f2937;
+}
+
+
+.answer-header span {
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+/* =====================================================
+   TEXTAREA
+===================================================== */
+
+textarea {
+
+    width: 100%;
+
+    max-width: 100%;
+
+    display: block;
+
+    box-sizing: border-box;
+
+    resize: vertical;
+
+    min-height: 170px;
+
+    padding: 18px;
+
+    border-radius: 16px;
+
+    border: 1px solid #d7dde8;
+
+    font-size: 17px;
+
+    font-family: inherit;
+
+    outline: none;
+
+    transition: .3s;
+
+    color: #1f2937;
+
+    background: #ffffff;
+}
+
+
+textarea:focus {
+
+    border-color: #4CAF50;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(76,175,80,.12);
+}
+
+
+textarea:disabled {
+
+    background: #f5f6f8;
+
+    cursor: not-allowed;
+}
+
+
+/* =====================================================
+   ANSWER BUTTONS
+===================================================== */
+
+.answer-actions {
+
+    display: flex;
+
+    gap: 15px;
+
+    justify-content: center;
+
+    margin-top: 20px;
+}
+
+
+.answer-actions button {
+
+    flex: 1;
+
+    max-width: 220px;
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #4CAF50;
+
+    color: white;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+    transition: .3s;
+}
+
+
+.answer-actions button:hover {
+
+    transform: translateY(-2px);
+}
+
+
+.answer-actions button:disabled {
+
+    opacity: .65;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =====================================================
+   VOICE BUTTON
+===================================================== */
+
+.voice-btn {
+
+    background: #f3f6fa !important;
+
+    color: #2e7d32 !important;
+
+    border: 1px solid #d7dde8 !important;
+}
+
+
+/* =====================================================
+   SUBMIT BUTTON
+===================================================== */
+
+.submit-answer-btn {
+
+    background:
+        linear-gradient(
+            135deg,
+            #4CAF50,
+            #2e7d32
+        ) !important;
+
+    color: white !important;
+}
+
+
+/* =====================================================
+   FEEDBACK
+===================================================== */
+
+.mock-feedback-card {
+
+    margin-top: 25px;
+
+    padding: 22px;
+
+    background: #f3f6fa;
+
+    border-radius: 18px;
+}
+
+
+.feedback-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 15px;
+}
+
+
+.feedback-header span {
+
+    color: #4CAF50;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: .5px;
+}
+
+
+.feedback-header h3 {
+
+    margin: 5px 0 0;
+
+    color: #1f2937;
+
+    font-size: 20px;
+}
+
+
+/* =====================================================
+   FEEDBACK SCORE
+===================================================== */
+
+.feedback-score {
+
+    font-size: 28px;
+
+    font-weight: 700;
+
+    color: #2e7d32;
+}
+
+
+.feedback-score small {
+
+    font-size: 15px;
+
+    color: #6b7280;
+
+    margin-left: 3px;
+}
+
+
+/* =====================================================
+   FEEDBACK TEXT
+===================================================== */
+
+.feedback-body {
+
+    line-height: 1.8;
+
+    color: #374151;
+
+    font-size: 16px;
+}
+
+
+/* =====================================================
+   RESULT CARD
+===================================================== */
+
+.mock-result-card {
+
+    width: min(92%, 760px);
+
+    background: #ffffff;
+
+    border-radius: 22px;
+
+    padding: 28px;
+
+    box-shadow: 0 12px 35px rgba(0,0,0,.08);
+
+    text-align: center;
+}
+
+
+.result-icon {
+
+    font-size: 45px;
+
+    margin-bottom: 10px;
+}
+
+
+.mock-result-card h1 {
+
+    color: #1f2937;
+
+    margin: 10px 0;
+
+    font-size: 30px;
+}
+
+
+.mock-result-card p {
+
+    color: #6b7280;
+
+    line-height: 1.7;
+
+    margin-bottom: 20px;
+}
+
+
+/* =====================================================
+   FINAL SCORE
+===================================================== */
+
+.final-score {
+
+    margin: 20px auto;
+
+    padding: 20px;
+
+    background: #f3f6fa;
+
+    border-radius: 18px;
+
+    max-width: 300px;
+}
+
+
+.final-score span {
+
+    display: block;
+
+    color: #6b7280;
+
+    margin-bottom: 5px;
+}
+
+
+.final-score strong {
+
+    display: block;
+
+    font-size: 58px;
+
+    color: #2e7d32;
+
+    line-height: 1.2;
+}
+
+
+.final-score small {
+
+    font-size: 20px;
+
+    color: #6b7280;
+
+    margin-left: 3px;
+}
+
+
+/* =====================================================
+   SCORE LIST
+===================================================== */
+
+.score-list {
+
+    display: flex;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin: 20px 0;
+}
+
+
+.score-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 8px 14px;
+
+    border-radius: 8px;
+
+    background: #4CAF50;
+
+    color: white;
+
+    font-size: 14px;
+}
+
+
+.score-item strong {
+
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   DASHBOARD BUTTON
+===================================================== */
+
+.dashboard-return-btn {
+
+    width: 100%;
+
+    max-width: 300px;
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #4CAF50;
+
+    color: white;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+    transition: .3s;
+}
+
+
+.dashboard-return-btn:hover {
+
+    transform: translateY(-2px);
+}
+
+
+/* =====================================================
+   NO RESUME
+===================================================== */
+
+.mock-empty-card {
+
+    width: min(92%, 650px);
+
+    background: #ffffff;
+
+    border-radius: 22px;
+
+    padding: 28px;
+
+    text-align: center;
+
+    box-shadow: 0 12px 35px rgba(0,0,0,.08);
+}
+
+
+.mock-empty-icon {
+
+    font-size: 50px;
+
+    margin-bottom: 10px;
+}
+
+
+.mock-empty-card h2 {
+
+    color: #1f2937;
+
+    margin: 10px 0;
+}
+
+
+.mock-empty-card p {
+
+    color: #6b7280;
+
+    line-height: 1.7;
+
+    margin-bottom: 20px;
+}
+
+
+.mock-empty-card button {
+
+    width: 100%;
+
+    max-width: 250px;
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #4CAF50;
+
+    color: white;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+    transition: .3s;
+}
+
+
+.mock-empty-card button:hover {
+
+    transform: translateY(-2px);
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media(max-width:768px) {
+
+    .mock-page {
+
+        min-height: calc(100vh - 70px);
+
+        padding: 25px 15px;
+    }
+
+
+    .mock-container {
+
+        width: 95%;
+
+        padding: 20px;
+    }
+
+
+    .mock-start-card {
+
+        width: 95%;
+
+        padding: 20px;
+    }
+
+
+    .mock-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+
+    .mock-header h1 {
+
+        font-size: 25px;
+    }
+
+
+    .progress-box {
+
+        width: 100%;
+    }
+
+
+    .mock-question-card {
+
+        font-size: 16px;
+
+        padding: 18px;
+    }
+
+
+    .mock-question-card h2 {
+
+        font-size: 16px;
+    }
+
+
+    textarea {
+
+        min-height: 140px;
+
+        font-size: 15px;
+    }
+
+
+    .answer-actions {
+
+        flex-direction: column;
+    }
+
+
+    .answer-actions button {
+
+        max-width: none;
+
+        width: 100%;
+    }
+
+
+    .start-btn {
+
+        font-size: 20px;
+    }
+
+
+    .mock-result-card {
+
+        width: 95%;
+
+        padding: 20px;
+    }
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media(max-width:480px) {
+
+    .mock-page {
+
+        min-height: calc(100vh - 70px);
+
+        padding: 15px;
+    }
+
+
+    .mock-container {
+
+        width: 96%;
+
+        padding: 16px;
+
+        border-radius: 18px;
+    }
+
+
+    .mock-start-card {
+
+        width: 96%;
+
+        padding: 16px;
+
+        border-radius: 18px;
+    }
+
+
+    .mock-header h1 {
+
+        font-size: 22px;
+    }
+
+
+    .mock-header p {
+
+        font-size: 13px;
+    }
+
+
+    .mock-question-card {
+
+        padding: 16px;
+
+        font-size: 15px;
+    }
+
+
+    .mock-question-card h2 {
+
+        font-size: 15px;
+
+        line-height: 1.7;
+    }
+
+
+    .question-label {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+
+    .replay-btn {
+
+        width: 100%;
+    }
+
+
+    textarea {
+
+        width: 100%;
+
+        min-height: 130px;
+
+        padding: 14px;
+
+        font-size: 15px;
+    }
+
+
+    .answer-actions {
+
+        flex-direction: column;
+    }
+
+
+    .answer-actions button {
+
+        width: 100%;
+
+        max-width: none;
+    }
+
+
+    .start-btn {
+
+        font-size: 18px;
+
+        padding: 16px;
+    }
+
+
+    .mock-feedback-card {
+
+        padding: 16px;
+    }
+
+
+    .feedback-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+
+    .feedback-score {
+
+        font-size: 25px;
+    }
+
+
+    .mock-result-card {
+
+        width: 96%;
+
+        padding: 16px;
+
+        border-radius: 18px;
+    }
+
+
+    .mock-result-card h1 {
+
+        font-size: 24px;
+    }
+
+
+    .final-score strong {
+
+        font-size: 42px;
+    }
+
+
+    .score-list {
+
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .score-item {
+
+        justify-content: space-between;
+    }
+
+
+    .dashboard-return-btn {
+
+        width: 100%;
+    }
+
+
+    .mock-empty-card {
+
+        width: 96%;
+
+        padding: 20px;
+    }
+}

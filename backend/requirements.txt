@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-multipart
+pymupdf
+python-docx
+requests
+openai
+python-dotenv
+groq
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]
+email-validator
+OS

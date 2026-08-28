@@ -1,0 +1,1153 @@
+/* ===================================================
+   CODING ROUND
+=================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* ===================================================
+   PAGE
+=================================================== */
+
+.coding-page {
+
+    min-height: 100vh;
+
+    background: #f1f5f9;
+
+    padding: 20px 14px;
+}
+
+
+.coding-container {
+
+    max-width: 1100px;
+
+    margin: auto;
+}
+
+
+/* ===================================================
+   HEADER
+=================================================== */
+
+.coding-header {
+
+    text-align: center;
+
+    margin-bottom: 20px;
+}
+
+
+.coding-badge {
+
+    display: inline-block;
+
+    padding: 7px 15px;
+
+    background: #e0e7ff;
+
+    color: #2563eb;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    margin-bottom: 12px;
+}
+
+
+.coding-header h1 {
+
+    font-size: 30px;
+
+    font-weight: 700;
+
+    color: #0f172a;
+
+    margin: 0 0 6px;
+}
+
+
+.coding-header p {
+
+    font-size: 14px;
+
+    color: #64748b;
+
+    margin: 0;
+}
+
+
+/* ===================================================
+   TOP BAR
+=================================================== */
+
+.top-bar {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+
+    margin-bottom: 12px;
+}
+
+
+.question-progress {
+
+    background: white;
+
+    padding: 10px 16px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: #1e293b;
+
+    border: 1px solid #e2e8f0;
+}
+
+
+.question-progress strong {
+
+    color: #2563eb;
+}
+
+
+.language-select {
+
+    min-width: 170px;
+
+    padding: 10px 14px;
+
+    border-radius: 10px;
+
+    border: 1px solid #dbe3f0;
+
+    background: white;
+
+    font-size: 13px;
+
+    outline: none;
+
+    cursor: pointer;
+}
+
+
+.language-select:focus {
+
+    border-color: #2563eb;
+
+    box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+}
+
+
+/* ===================================================
+   CODING PROGRESS
+=================================================== */
+
+.coding-progress {
+
+    width: 100%;
+
+    height: 7px;
+
+    background: #e2e8f0;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    margin-bottom: 20px;
+}
+
+
+.coding-progress-fill {
+
+    height: 100%;
+
+    width: 0;
+
+    background: #16a34a;
+
+    border-radius: 20px;
+
+    transition: width .3s ease;
+}
+
+
+/* ===================================================
+   QUESTION CARD
+=================================================== */
+
+.question-card {
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+
+    border: 1px solid #e2e8f0;
+}
+
+
+.question-label {
+
+    display: inline-block;
+
+    background: #dcfce7;
+
+    color: #15803d;
+
+    padding: 5px 12px;
+
+    border-radius: 8px;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    margin-bottom: 12px;
+}
+
+
+.question-card h2 {
+
+    font-size: 18px;
+
+    line-height: 1.6;
+
+    color: #0f172a;
+
+    margin: 0;
+}
+
+
+/* ===================================================
+   EDITOR
+=================================================== */
+
+.editor-wrapper {
+
+    background: #0f172a;
+
+    border-radius: 16px;
+
+    overflow: hidden;
+
+    border: 1px solid #1e293b;
+}
+
+
+.editor-top {
+
+    background: #111827;
+
+    color: #cbd5e1;
+
+    padding: 12px 18px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    border-bottom: 1px solid #1e293b;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+
+.code-editor {
+
+    width: 100%;
+
+    height: 340px;
+
+    display: block;
+
+    border: none;
+
+    outline: none;
+
+    resize: vertical;
+
+    padding: 18px;
+
+    background: #0f172a;
+
+    color: white;
+
+    font-family: Consolas, "Courier New", monospace;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+.code-editor::placeholder {
+
+    color: #64748b;
+}
+
+
+.code-editor:focus {
+
+    outline: none;
+}
+
+
+/* ===================================================
+   BUTTONS
+=================================================== */
+
+.action-buttons {
+
+    display: flex;
+
+    gap: 15px;
+
+    margin-top: 20px;
+
+    flex-wrap: wrap;
+}
+
+
+.run-btn,
+.submit-btn,
+.next-btn,
+.finish-btn {
+
+    border: none;
+
+    padding: 12px 22px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    transition: .25s;
+}
+
+
+.run-btn {
+
+    background: #111827;
+
+    color: white;
+}
+
+
+.submit-btn,
+.next-btn,
+.finish-btn {
+
+    background: #16a34a;
+
+    color: white;
+}
+
+
+.run-btn:hover,
+.submit-btn:hover,
+.next-btn:hover,
+.finish-btn:hover {
+
+    transform: translateY(-2px);
+}
+
+
+.run-btn:disabled,
+.submit-btn:disabled {
+
+    opacity: .6;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* ===================================================
+   OUTPUT
+=================================================== */
+
+.result-card,
+.evaluation-card {
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 20px;
+
+    margin-top: 20px;
+
+    border: 1px solid #e2e8f0;
+}
+
+
+.result-title,
+.evaluation-title {
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    color: #0f172a;
+
+    margin-bottom: 14px;
+}
+
+
+.result-card pre,
+.evaluation-content pre {
+
+    background: #0f172a;
+
+    color: white;
+
+    border-radius: 10px;
+
+    padding: 14px;
+
+    overflow: auto;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    max-height: 260px;
+
+    margin: 0;
+}
+
+
+.evaluation-content {
+
+    font-size: 14px;
+
+    color: #334155;
+
+    line-height: 1.7;
+}
+
+
+.evaluation-content h1,
+.evaluation-content h2,
+.evaluation-content h3,
+.evaluation-content h4 {
+
+    margin: 12px 0 8px;
+
+    color: #0f172a;
+}
+
+
+.evaluation-content ul,
+.evaluation-content ol {
+
+    padding-left: 20px;
+}
+
+
+.evaluation-content code {
+
+    background: #e2e8f0;
+
+    padding: 2px 6px;
+
+    border-radius: 6px;
+
+    color: #0f172a;
+}
+
+
+.evaluation-content p {
+
+    margin: 8px 0;
+}
+
+
+/* ===================================================
+   NEXT QUESTION
+=================================================== */
+
+.next-wrapper {
+
+    text-align: center;
+
+    margin-top: 20px;
+}
+
+
+.next-btn {
+
+    min-width: 180px;
+}
+
+
+/* ===================================================
+   FINISH SECTION
+=================================================== */
+
+.finish-wrapper {
+
+    margin-top: 20px;
+
+    padding: 20px;
+
+    background: white;
+
+    border-radius: 16px;
+
+    border: 1px solid #e2e8f0;
+
+    text-align: center;
+}
+
+
+.finish-wrapper p {
+
+    margin: 0 0 15px;
+
+    color: #334155;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+.finish-btn {
+
+    min-width: 230px;
+}
+
+
+/* ===================================================
+   COMPLETED CARD
+=================================================== */
+
+.coding-complete-card {
+
+    max-width: 600px;
+
+    margin: 80px auto;
+
+    background: white;
+
+    padding: 35px;
+
+    border-radius: 18px;
+
+    text-align: center;
+
+    border: 1px solid #e2e8f0;
+
+    box-shadow: 0 10px 30px rgba(15,23,42,.06);
+}
+
+
+.complete-icon {
+
+    font-size: 50px;
+
+    margin-bottom: 10px;
+}
+
+
+.coding-complete-card h1 {
+
+    font-size: 28px;
+
+    color: #0f172a;
+
+    margin: 8px 0 10px;
+}
+
+
+.coding-complete-card p {
+
+    color: #64748b;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+
+    margin-bottom: 20px;
+}
+
+
+/* ===================================================
+   FINAL STAT
+=================================================== */
+
+.coding-final-stat {
+
+    max-width: 280px;
+
+    margin: 20px auto 25px;
+
+    padding: 20px;
+
+    background: #f8fafc;
+
+    border-radius: 14px;
+
+    border: 1px solid #e2e8f0;
+}
+
+
+.coding-final-stat span {
+
+    display: block;
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    margin-bottom: 5px;
+}
+
+
+.coding-final-stat strong {
+
+    display: block;
+
+    color: #16a34a;
+
+    font-size: 48px;
+
+    line-height: 1.2;
+}
+
+
+.coding-final-stat small {
+
+    font-size: 18px;
+
+    color: #64748b;
+
+    margin-left: 3px;
+}
+
+
+/* ===================================================
+   DASHBOARD BUTTON
+=================================================== */
+
+.dashboard-return-btn {
+
+    border: none;
+
+    padding: 12px 22px;
+
+    border-radius: 10px;
+
+    background: #16a34a;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .25s;
+}
+
+
+.dashboard-return-btn:hover {
+
+    transform: translateY(-2px);
+}
+
+
+/* ===================================================
+   EMPTY PAGE
+=================================================== */
+
+.coding-empty-card {
+
+    max-width: 450px;
+
+    margin: 90px auto;
+
+    background: white;
+
+    padding: 36px;
+
+    border-radius: 18px;
+
+    text-align: center;
+
+    border: 1px solid #e2e8f0;
+
+    box-shadow: 0 10px 30px rgba(15,23,42,.05);
+}
+
+
+.coding-empty-icon {
+
+    font-size: 45px;
+
+    margin-bottom: 10px;
+}
+
+
+.coding-empty-card h2 {
+
+    font-size: 24px;
+
+    color: #0f172a;
+
+    margin: 0 0 10px;
+}
+
+
+.coding-empty-card p {
+
+    color: #64748b;
+
+    line-height: 1.7;
+
+    margin-bottom: 20px;
+}
+
+
+.coding-empty-card button {
+
+    border: none;
+
+    padding: 12px 22px;
+
+    border-radius: 10px;
+
+    background: #16a34a;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .25s;
+}
+
+
+.coding-empty-card button:hover {
+
+    transform: translateY(-2px);
+}
+
+
+/* ===================================================
+   SCROLLBAR
+=================================================== */
+
+.code-editor::-webkit-scrollbar,
+.result-card pre::-webkit-scrollbar,
+.evaluation-content pre::-webkit-scrollbar {
+
+    width: 8px;
+
+    height: 8px;
+}
+
+
+.code-editor::-webkit-scrollbar-track,
+.result-card pre::-webkit-scrollbar-track,
+.evaluation-content pre::-webkit-scrollbar-track {
+
+    background: #0f172a;
+}
+
+
+.code-editor::-webkit-scrollbar-thumb,
+.result-card pre::-webkit-scrollbar-thumb,
+.evaluation-content pre::-webkit-scrollbar-thumb {
+
+    background: #334155;
+
+    border-radius: 10px;
+}
+
+
+/* ===================================================
+   TABLET
+=================================================== */
+
+@media (max-width: 992px) {
+
+    .coding-header h1 {
+
+        font-size: 26px;
+    }
+
+
+    .top-bar {
+
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .question-progress {
+
+        width: 100%;
+
+        text-align: center;
+    }
+
+
+    .language-select {
+
+        width: 100%;
+    }
+}
+
+
+/* ===================================================
+   MOBILE
+=================================================== */
+
+@media (max-width: 768px) {
+
+    .coding-page {
+
+        padding: 15px 10px;
+    }
+
+
+    .coding-header {
+
+        margin-bottom: 16px;
+    }
+
+
+    .coding-header h1 {
+
+        font-size: 22px;
+    }
+
+
+    .coding-header p {
+
+        font-size: 13px;
+    }
+
+
+    .coding-badge {
+
+        font-size: 10px;
+
+        padding: 6px 12px;
+    }
+
+
+    .question-card {
+
+        padding: 16px;
+
+        border-radius: 14px;
+    }
+
+
+    .question-card h2 {
+
+        font-size: 15px;
+
+        line-height: 1.6;
+    }
+
+
+    .question-label {
+
+        font-size: 10px;
+    }
+
+
+    .editor-wrapper {
+
+        border-radius: 14px;
+    }
+
+
+    .editor-top {
+
+        padding: 10px 14px;
+
+        font-size: 11px;
+    }
+
+
+    .code-editor {
+
+        height: 250px;
+
+        font-size: 13px;
+
+        padding: 14px;
+    }
+
+
+    .action-buttons {
+
+        flex-direction: column;
+
+        gap: 12px;
+    }
+
+
+    .run-btn,
+    .submit-btn {
+
+        width: 100%;
+    }
+
+
+    .result-card,
+    .evaluation-card {
+
+        padding: 16px;
+
+        border-radius: 14px;
+    }
+
+
+    .result-title,
+    .evaluation-title {
+
+        font-size: 16px;
+    }
+
+
+    .evaluation-content {
+
+        font-size: 13px;
+    }
+
+
+    .next-btn {
+
+        width: 100%;
+    }
+
+
+    .finish-wrapper {
+
+        padding: 16px;
+    }
+
+
+    .finish-btn {
+
+        width: 100%;
+
+        min-width: 0;
+    }
+
+
+    .coding-complete-card {
+
+        width: 95%;
+
+        margin: 50px auto;
+
+        padding: 25px 18px;
+
+        border-radius: 16px;
+    }
+
+
+    .coding-complete-card h1 {
+
+        font-size: 23px;
+    }
+
+
+    .coding-final-stat strong {
+
+        font-size: 42px;
+    }
+
+
+    .dashboard-return-btn {
+
+        width: 100%;
+    }
+
+
+    .coding-empty-card {
+
+        width: 95%;
+
+        margin: 60px auto;
+
+        padding: 25px 18px;
+    }
+}
+
+
+/* ===================================================
+   SMALL PHONES
+=================================================== */
+
+@media (max-width: 480px) {
+
+    .coding-page {
+
+        padding: 12px 8px;
+    }
+
+
+    .coding-header h1 {
+
+        font-size: 20px;
+    }
+
+
+    .coding-header p {
+
+        font-size: 12px;
+    }
+
+
+    .coding-badge {
+
+        font-size: 9px;
+
+        padding: 6px 11px;
+    }
+
+
+    .question-card {
+
+        padding: 14px;
+    }
+
+
+    .question-card h2 {
+
+        font-size: 14px;
+    }
+
+
+    .code-editor {
+
+        height: 220px;
+
+        font-size: 12px;
+
+        padding: 12px;
+    }
+
+
+    .editor-top {
+
+        padding: 9px 12px;
+
+        font-size: 10px;
+    }
+
+
+    .result-card,
+    .evaluation-card {
+
+        padding: 15px;
+    }
+
+
+    .result-card pre,
+    .evaluation-content pre {
+
+        font-size: 12px;
+
+        padding: 12px;
+    }
+
+
+    .coding-complete-card {
+
+        width: 96%;
+
+        margin: 40px auto;
+
+        padding: 22px 15px;
+    }
+
+
+    .complete-icon {
+
+        font-size: 42px;
+    }
+
+
+    .coding-complete-card h1 {
+
+        font-size: 21px;
+    }
+
+
+    .coding-complete-card p {
+
+        font-size: 13px;
+    }
+
+
+    .coding-final-stat {
+
+        padding: 16px;
+    }
+
+
+    .coding-final-stat strong {
+
+        font-size: 38px;
+    }
+
+
+    .coding-empty-card {
+
+        width: 96%;
+
+        padding: 22px 15px;
+    }
+
+
+    .coding-empty-card h2 {
+
+        font-size: 21px;
+    }
+}

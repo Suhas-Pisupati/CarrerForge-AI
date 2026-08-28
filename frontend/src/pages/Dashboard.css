@@ -1,0 +1,337 @@
+/* MAIN BACKGROUND (SOFT GRADIENT, NOT PLAIN) */
+.dashboard {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f9fafb, #eef2f7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* CENTER UPLOAD */
+.upload-section {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  width: 420px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  margin-bottom: 40px;
+}
+
+/* GRID */
+.dashboard-grid {
+  width: 100%;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+}
+
+/* CARD */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+/* ================= ATS SCORE ================= */
+
+.score-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CIRCLE RING */
+.score-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.score-ring svg {
+  width: 120px;
+  height: 120px;
+  transform: rotate(-90deg);
+}
+
+.score-ring circle {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+/* BACK */
+.score-ring circle:first-child {
+  stroke: #e5e7eb;
+}
+
+/* PROGRESS */
+.score-ring circle:last-child {
+  stroke: #16a34a;
+  transition: 0.6s;
+}
+
+/* TEXT */
+.score-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* LABEL */
+.card-label {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+/* ================= SKILLS ================= */
+
+.skills-header {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* PILLS */
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-pill {
+  background: #16a34a;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* CHART */
+.chart-box {
+  margin-top: 20px;
+}
+
+/* EMPTY */
+.empty {
+  color: #777;
+  font-size: 13px;
+}
+
+/* ===========================
+   TABLET
+=========================== */
+
+@media screen and (max-width:768px){
+
+.dashboard{
+
+    padding:24px 14px;
+}
+
+.upload-section{
+
+    width:100%;
+
+    max-width:100%;
+
+    margin-bottom:30px;
+}
+
+.dashboard-grid{
+
+    grid-template-columns:1fr;
+
+    gap:24px;
+}
+
+/* ---------- CARD ---------- */
+
+.card{
+
+    width:100%;
+
+    padding:24px;
+
+    overflow:hidden;
+}
+
+/* ---------- ATS ---------- */
+
+.score-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    min-height:250px;
+}
+
+.score-ring{
+
+    width:140px;
+
+    height:140px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin:10px auto 20px;
+}
+
+.score-ring svg{
+
+    width:140px;
+
+    height:140px;
+
+    overflow:visible;
+}
+
+.score-text{
+
+    font-size:28px;
+}
+
+.card-label{
+
+    margin-top:6px;
+
+    font-size:18px;
+}
+
+/* ---------- SKILLS ---------- */
+
+.skills-card{
+
+    margin-top:0;
+}
+
+.skills-list{
+
+    justify-content:center;
+}
+
+/* ---------- CHART ---------- */
+
+.chart-box{
+
+    width:100%;
+
+    height:260px;
+
+    margin-top:25px;
+
+    overflow:hidden;
+}
+
+.chart-box canvas{
+
+    width:100% !important;
+
+    height:100% !important;
+}
+
+/* ---------- PROJECT SECTION ---------- */
+
+.project-recommendation-container{
+
+    margin-top:35px !important;
+}
+
+}
+
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media screen and (max-width:480px){
+
+.dashboard{
+
+    padding:18px 10px;
+}
+
+.upload-section{
+
+    padding:18px;
+}
+
+.card{
+
+    padding:18px;
+}
+
+/* ATS */
+
+.score-card{
+
+    min-height:220px;
+}
+
+.score-ring{
+
+    width:125px;
+
+    height:125px;
+
+    margin:15px auto 18px;
+}
+
+.score-ring svg{
+
+    width:125px;
+
+    height:125px;
+}
+
+.score-text{
+
+    font-size:24px;
+}
+
+.card-label{
+
+    font-size:16px;
+}
+
+/* Skills */
+
+.skill-pill{
+
+    font-size:11px;
+
+    padding:6px 10px;
+}
+
+/* Chart */
+
+.chart-box{
+
+    height:220px;
+}
+
+/* Project */
+
+.project-recommendation-container{
+
+    margin-top:30px !important;
+}
+
+}
