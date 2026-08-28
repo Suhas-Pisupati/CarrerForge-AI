@@ -11,4 +11,3 @@ sqlalchemy
 passlib[bcrypt]
 python-jose[cryptography]
 email-validator
-OS
