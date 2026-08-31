@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import { registerUser } from "../api";
 import "./Auth.css";
 
 function Register() {
@@ -28,6 +28,10 @@ function Register() {
 
     setError("");
 
+
+    // ==========================================
+    // VALIDATION
+    // ==========================================
 
     if (
       !name.trim() ||
@@ -69,23 +73,28 @@ function Register() {
 
     try {
 
-      await axios.post(
-        "http://127.0.0.1:8000/auth/register",
-        {
-          name: name.trim(),
+      // ========================================
+      // REGISTER THROUGH DEPLOYED API
+      // ========================================
 
-          email:
-            email.trim().toLowerCase(),
-
-          password: password
-        }
-      );
+      await registerUser({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password: password
+      });
 
 
-      // Clear any old logged-in user
+      // ========================================
+      // CLEAR OLD LOGIN DATA
+      // ========================================
+
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
+
+      // ========================================
+      // SUCCESS
+      // ========================================
 
       alert(
         "Registration successful. Please login."
@@ -106,6 +115,7 @@ function Register() {
 
       setError(
         err.response?.data?.detail ||
+        err.message ||
         "Registration failed. Please try again."
       );
 
@@ -152,9 +162,6 @@ function Register() {
 
         <form onSubmit={handleRegister}>
 
-
-          {/* NAME */}
-
           <div className="form-group">
 
             <label>
@@ -175,8 +182,6 @@ function Register() {
           </div>
 
 
-          {/* EMAIL */}
-
           <div className="form-group">
 
             <label>
@@ -196,8 +201,6 @@ function Register() {
 
           </div>
 
-
-          {/* PASSWORD */}
 
           <div className="form-group">
 
@@ -220,8 +223,6 @@ function Register() {
           </div>
 
 
-          {/* CONFIRM PASSWORD */}
-
           <div className="form-group">
 
             <label>
@@ -243,8 +244,6 @@ function Register() {
           </div>
 
 
-          {/* REGISTER */}
-
           <button
             type="submit"
             className="auth-button"
@@ -257,7 +256,6 @@ function Register() {
             }
 
           </button>
-
 
         </form>
 
@@ -273,7 +271,6 @@ function Register() {
           </Link>
 
         </div>
-
 
       </div>
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import { loginUser } from "../api";
 import "./Auth.css";
 
 function Login({ setUser }) {
@@ -37,30 +37,24 @@ function Login({ setUser }) {
 
     try {
 
-      const response = await axios.post(
-        "http://127.0.0.1:8000/auth/login",
-        {
-          email: email.trim().toLowerCase(),
-          password: password
-        }
-      );
+      const response = await loginUser({
+        email: email.trim().toLowerCase(),
+        password: password
+      });
 
 
       // ========================================
-      // GET CURRENT LOGIN DATA
+      // GET LOGIN DATA
       // ========================================
 
-      const token =
-        response.data.access_token;
-
-      const loginUser =
-        response.data.user;
+      const token = response?.access_token;
+      const loginUserData = response?.user;
 
 
-      if (!token || !loginUser) {
+      if (!token || !loginUserData) {
 
         throw new Error(
-          "Invalid login response"
+          "Invalid login response from server"
         );
 
       }
@@ -85,7 +79,7 @@ function Login({ setUser }) {
 
       localStorage.setItem(
         "user",
-        JSON.stringify(loginUser)
+        JSON.stringify(loginUserData)
       );
 
 
@@ -95,7 +89,7 @@ function Login({ setUser }) {
 
       if (setUser) {
 
-        setUser(loginUser);
+        setUser(loginUserData);
 
       }
 
@@ -118,6 +112,7 @@ function Login({ setUser }) {
 
       setError(
         err.response?.data?.detail ||
+        err.message ||
         "Login failed. Please check your email and password."
       );
 
@@ -164,9 +159,6 @@ function Login({ setUser }) {
 
         <form onSubmit={handleLogin}>
 
-
-          {/* EMAIL */}
-
           <div className="form-group">
 
             <label>
@@ -186,8 +178,6 @@ function Login({ setUser }) {
 
           </div>
 
-
-          {/* PASSWORD */}
 
           <div className="form-group">
 
@@ -209,8 +199,6 @@ function Login({ setUser }) {
           </div>
 
 
-          {/* LOGIN BUTTON */}
-
           <button
             type="submit"
             className="auth-button"
@@ -223,7 +211,6 @@ function Login({ setUser }) {
             }
 
           </button>
-
 
         </form>
 
@@ -240,7 +227,6 @@ function Login({ setUser }) {
 
         </div>
 
-
       </div>
 
     </div>
@@ -248,5 +234,4 @@ function Login({ setUser }) {
   );
 
 }
-
 export default Login;
