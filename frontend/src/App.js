@@ -6,8 +6,9 @@ import {
 } from "react-router-dom";
 
 import { useEffect, useState } from "react";
-
 import axios from "axios";
+
+import API from "./api";
 
 import "./App.css";
 
@@ -43,26 +44,9 @@ import ProjectGuide from "./pages/ProjectGuide";
 
 function App() {
 
-  // ========================================
-  // USER STATE
-  // IMPORTANT:
-  // Do NOT load user from localStorage here.
-  // Backend will verify the token first.
-  // ========================================
-
   const [user, setUser] = useState(null);
 
-
-  // ========================================
-  // AUTH CHECK STATE
-  // ========================================
-
   const [authLoading, setAuthLoading] = useState(true);
-
-
-  // ========================================
-  // RESUME RESULT
-  // ========================================
 
   const [result, setResult] = useState(null);
 
@@ -81,10 +65,7 @@ function App() {
       const token = localStorage.getItem("token");
 
 
-      // ======================================
-      // NO TOKEN = NOT LOGGED IN
-      // ======================================
-
+      // No token
       if (!token) {
 
         localStorage.removeItem("user");
@@ -101,15 +82,11 @@ function App() {
       }
 
 
-      // ======================================
-      // TOKEN EXISTS
-      // VERIFY WITH BACKEND
-      // ======================================
-
       try {
 
+        // ✅ DEPLOYED BACKEND URL
         const response = await axios.get(
-          "http://127.0.0.1:8000/auth/me",
+          `${API}/auth/me`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -120,10 +97,6 @@ function App() {
 
         const currentUser = response.data;
 
-
-        // ====================================
-        // ONLY USE VERIFIED USER
-        // ====================================
 
         if (mounted) {
 
@@ -142,11 +115,6 @@ function App() {
           "User verification failed:",
           error
         );
-
-
-        // ====================================
-        // TOKEN INVALID / EXPIRED
-        // ====================================
 
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -174,10 +142,6 @@ function App() {
     verifyUser();
 
 
-    // ======================================
-    // CLEANUP
-    // ======================================
-
     return () => {
 
       mounted = false;
@@ -194,9 +158,7 @@ function App() {
       <Routes>
 
 
-        {/* =====================================
-            PUBLIC ROUTES
-        ====================================== */}
+        {/* PUBLIC ROUTES */}
 
         <Route
           path="/login"
@@ -254,9 +216,7 @@ function App() {
         />
 
 
-        {/* =====================================
-            PROTECTED ROUTES
-        ====================================== */}
+        {/* PROTECTED ROUTES */}
 
         <Route
           element={
@@ -267,7 +227,6 @@ function App() {
           }
         >
 
-
           <Route
             element={
               <ProtectedLayout
@@ -276,11 +235,6 @@ function App() {
               />
             }
           >
-
-
-            {/* =================================
-                HOME DASHBOARD
-            ================================= */}
 
             <Route
               path="/"
@@ -295,10 +249,6 @@ function App() {
             />
 
 
-            {/* =================================
-                RESUME ANALYZER
-            ================================= */}
-
             <Route
               path="/resume"
               element={
@@ -311,10 +261,6 @@ function App() {
             />
 
 
-            {/* =================================
-                INTERVIEW
-            ================================= */}
-
             <Route
               path="/interview"
               element={
@@ -324,10 +270,6 @@ function App() {
               }
             />
 
-
-            {/* =================================
-                JOBS
-            ================================= */}
 
             <Route
               path="/jobs"
@@ -339,10 +281,6 @@ function App() {
             />
 
 
-            {/* =================================
-                MOCK INTERVIEW
-            ================================= */}
-
             <Route
               path="/mock"
               element={
@@ -353,10 +291,6 @@ function App() {
             />
 
 
-            {/* =================================
-                CODING
-            ================================= */}
-
             <Route
               path="/coding"
               element={
@@ -366,10 +300,6 @@ function App() {
               }
             />
 
-
-            {/* =================================
-                PROJECT GUIDE
-            ================================= */}
 
             <Route
               path="/projects"
@@ -390,28 +320,22 @@ function App() {
               }
             />
 
-
           </Route>
 
         </Route>
 
 
-        {/* =====================================
-            UNKNOWN URL
-        ====================================== */}
+        {/* UNKNOWN URL */}
 
         <Route
           path="*"
           element={
-
             <Navigate
               to={user ? "/" : "/login"}
               replace
             />
-
           }
         />
-
 
       </Routes>
 
