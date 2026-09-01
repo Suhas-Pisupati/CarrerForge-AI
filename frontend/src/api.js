@@ -1,27 +1,23 @@
 import axios from "axios";
 
-const API =
+const API = (
   process.env.REACT_APP_API_URL ||
-  "http://localhost:8000";
+  "http://localhost:8000"
+).replace(/\/+$/, "");
 
-console.log("API URL:", API);
+console.log("Backend API:", API);
 
 
-// ==============================
+// ========================================
 // AUTHENTICATION
-// ==============================
+// ========================================
 
-// Register User
+// Register
 export const registerUser = async (data) => {
   try {
     const response = await axios.post(
       `${API}/auth/register`,
-      data,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      data
     );
 
     return response.data;
@@ -37,17 +33,12 @@ export const registerUser = async (data) => {
 };
 
 
-// Login User
+// Login
 export const loginUser = async (data) => {
   try {
     const response = await axios.post(
       `${API}/auth/login`,
-      data,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      data
     );
 
     return response.data;
@@ -63,40 +54,9 @@ export const loginUser = async (data) => {
 };
 
 
-// Get Current User
-export const getCurrentUser = async () => {
-  try {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      throw new Error("No authentication token found");
-    }
-
-    const response = await axios.get(
-      `${API}/auth/me`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return response.data;
-
-  } catch (error) {
-    console.error(
-      "Current User Error:",
-      error.response?.data || error.message
-    );
-
-    throw error;
-  }
-};
-
-
-// ==============================
+// ========================================
 // RESUME ANALYSIS
-// ==============================
+// ========================================
 
 export const analyzeResume = async (file) => {
   const formData = new FormData();
@@ -106,7 +66,12 @@ export const analyzeResume = async (file) => {
   try {
     const response = await axios.post(
       `${API}/analyze`,
-      formData
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
 
     return response.data;
@@ -122,9 +87,9 @@ export const analyzeResume = async (file) => {
 };
 
 
-// ==============================
+// ========================================
 // INTERVIEW CHAT
-// ==============================
+// ========================================
 
 export const interviewChat = async (data) => {
   try {
@@ -146,9 +111,9 @@ export const interviewChat = async (data) => {
 };
 
 
-// ==============================
+// ========================================
 // JOB CHAT
-// ==============================
+// ========================================
 
 export const jobChat = async (data) => {
   try {
@@ -170,9 +135,9 @@ export const jobChat = async (data) => {
 };
 
 
-// ==============================
+// ========================================
 // MOCK INTERVIEW
-// ==============================
+// ========================================
 
 export const startMockInterview = async (data) => {
   try {
@@ -185,7 +150,7 @@ export const startMockInterview = async (data) => {
 
   } catch (error) {
     console.error(
-      "Mock Interview Start Error:",
+      "Start Mock Interview Error:",
       error.response?.data || error.message
     );
 
@@ -205,7 +170,7 @@ export const evaluateMockInterview = async (data) => {
 
   } catch (error) {
     console.error(
-      "Mock Interview Evaluation Error:",
+      "Evaluate Mock Interview Error:",
       error.response?.data || error.message
     );
 
@@ -214,9 +179,9 @@ export const evaluateMockInterview = async (data) => {
 };
 
 
-// ==============================
-// CODING QUESTIONS
-// ==============================
+// ========================================
+// CODING
+// ========================================
 
 export const getCodingQuestions = async (data) => {
   try {
@@ -238,10 +203,6 @@ export const getCodingQuestions = async (data) => {
 };
 
 
-// ==============================
-// RUN CODING
-// ==============================
-
 export const runCoding = async (data) => {
   try {
     const response = await axios.post(
@@ -253,7 +214,7 @@ export const runCoding = async (data) => {
 
   } catch (error) {
     console.error(
-      "Coding Run Error:",
+      "Run Coding Error:",
       error.response?.data || error.message
     );
 
@@ -261,10 +222,6 @@ export const runCoding = async (data) => {
   }
 };
 
-
-// ==============================
-// EVALUATE CODING
-// ==============================
 
 export const evaluateCoding = async (data) => {
   try {
@@ -277,7 +234,7 @@ export const evaluateCoding = async (data) => {
 
   } catch (error) {
     console.error(
-      "Coding Evaluation Error:",
+      "Evaluate Coding Error:",
       error.response?.data || error.message
     );
 
@@ -286,9 +243,9 @@ export const evaluateCoding = async (data) => {
 };
 
 
-// ==============================
+// ========================================
 // PROJECTS
-// ==============================
+// ========================================
 
 export const getProjects = async () => {
   try {
@@ -309,9 +266,9 @@ export const getProjects = async () => {
 };
 
 
-// ==============================
+// ========================================
 // PROJECT GUIDE
-// ==============================
+// ========================================
 
 export const getProjectGuide = async (data) => {
   try {
@@ -333,8 +290,8 @@ export const getProjectGuide = async (data) => {
 };
 
 
-// ==============================
-// EXPORT BASE API URL
-// ==============================
+// ========================================
+// EXPORT API URL
+// ========================================
 
 export default API;
