@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import os
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -8,7 +9,10 @@ from passlib.context import CryptContext
 # SECURITY CONFIGURATION
 # ==========================================
 
-SECRET_KEY = "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET_KEY"
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET_KEY"
+)
 
 ALGORITHM = "HS256"
 
@@ -27,6 +31,14 @@ pwd_context = CryptContext(
 
 def hash_password(password: str):
 
+    # bcrypt supports maximum 72 bytes
+    password_bytes = password.encode("utf-8")
+
+    if len(password_bytes) > 72:
+        raise ValueError(
+            "Password is too long. Maximum allowed length is 72 bytes."
+        )
+
     return pwd_context.hash(password)
 
 
@@ -34,6 +46,9 @@ def verify_password(
     plain_password: str,
     hashed_password: str
 ):
+
+    if len(plain_password.encode("utf-8")) > 72:
+        return False
 
     return pwd_context.verify(
         plain_password,

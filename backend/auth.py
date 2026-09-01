@@ -39,9 +39,7 @@ def register(
     db: Session = Depends(get_db)
 ):
 
-    # Normalize email
     email = request.email.strip().lower()
-
     name = request.name.strip()
 
     # Validate name
@@ -51,31 +49,28 @@ def register(
             detail="Name is required"
         )
 
-    # Validate email
-    if not email:
-        raise HTTPException(
-            status_code=400,
-            detail="Email is required"
-        )
-
     # Check existing user
     existing_user = db.query(User).filter(
         User.email == email
     ).first()
 
     if existing_user:
-
         raise HTTPException(
             status_code=400,
             detail="Email already registered"
         )
 
-    # Validate password
-    if len(request.password) < 6:
+    try:
+
+        hashed_password = hash_password(
+            request.password
+        )
+
+    except ValueError as e:
 
         raise HTTPException(
             status_code=400,
-            detail="Password must contain at least 6 characters"
+            detail=str(e)
         )
 
     # Create user
@@ -85,9 +80,7 @@ def register(
 
         email=email,
 
-        password=hash_password(
-            request.password
-        )
+        password=hashed_password
 
     )
 
@@ -124,33 +117,35 @@ def login(
     db: Session = Depends(get_db)
 ):
 
-    # Normalize email
     email = request.email.strip().lower()
 
-    # Find user
     user = db.query(User).filter(
         User.email == email
     ).first()
 
     if not user:
-
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
         )
 
-    # Verify password
-    if not verify_password(
-        request.password,
-        user.password
-    ):
+    try:
 
+        password_valid = verify_password(
+            request.password,
+            user.password
+        )
+
+    except Exception:
+
+        password_valid = False
+
+    if not password_valid:
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
         )
 
-    # Create JWT
     token = create_access_token({
 
         "sub": str(user.id),
@@ -159,8 +154,6 @@ def login(
 
     })
 
-    # IMPORTANT:
-    # Always return the CURRENT database user
     return {
 
         "access_token": token,
@@ -190,7 +183,6 @@ def get_current_user(
     db: Session = Depends(get_db)
 ):
 
-    # Check authorization header
     if not authorization:
 
         raise HTTPException(
@@ -198,7 +190,6 @@ def get_current_user(
             detail="Authentication required"
         )
 
-    # Check Bearer token
     if not authorization.startswith("Bearer "):
 
         raise HTTPException(
@@ -212,7 +203,6 @@ def get_current_user(
         1
     ).strip()
 
-    # Verify token
     user_id = verify_token(token)
 
     if not user_id:
@@ -233,7 +223,6 @@ def get_current_user(
             detail="Invalid user token"
         )
 
-    # Get CURRENT user from database
     user = db.query(User).filter(
         User.id == user_id
     ).first()
