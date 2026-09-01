@@ -45,21 +45,42 @@ from project_engine import (
 app = FastAPI()
 
 # ==========================================
+# CREATE FASTAPI APP
+# ==========================================
+
+app = FastAPI(
+    title="CareerForge AI API"
+)
+
+
+# ==========================================
 # CORS CONFIGURATION
 # ==========================================
 
 origins = [
+
+    # Local React
     "http://localhost:3000",
+
     "http://127.0.0.1:3000",
+
 ]
 
+
 app.add_middleware(
+
     CORSMiddleware,
+
     allow_origins=origins,
+
     allow_credentials=True,
+
     allow_methods=["*"],
+
     allow_headers=["*"],
+
 )
+
 
 # ==========================================
 # CREATE DATABASE TABLES
@@ -69,27 +90,41 @@ Base.metadata.create_all(
     bind=engine
 )
 
+
 # ==========================================
 # AUTHENTICATION ROUTES
 # ==========================================
 
-app.include_router(auth_router)
+app.include_router(
+    auth_router
+)
+
+
+# ==========================================
+# HOME
+# ==========================================
+
+@app.get("/")
+def home():
+
+    return {
+
+        "message": "CareerForge AI Backend is running"
+
+    }
+
 
 # ==========================================
 # HEALTH CHECK
 # ==========================================
 
-@app.get("/")
-def home():
-    return {
-        "message": "CareerForge AI Backend is running"
-    }
-
-
 @app.get("/health")
 def health():
+
     return {
+
         "status": "healthy"
+
     }
 # ===============================
 # CHAT REQUEST MODEL
