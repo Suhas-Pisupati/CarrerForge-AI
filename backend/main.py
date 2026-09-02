@@ -52,34 +52,20 @@ app = FastAPI(
     title="CareerForge AI API"
 )
 
-# ==========================================
-# CORS CONFIGURATION
-# ==========================================
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-origins = [
-
-    # Local React
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-
-    # Deployed React Frontend - Vercel
-    "https://carrer-forge-ai.vercel.app",
-
-]
-
+app = FastAPI()
 
 app.add_middleware(
-
     CORSMiddleware,
-
-    allow_origins=origins,
-
+    allow_origins=[
+        "http://localhost:3000",
+        "https://carrer-forge-ai-git-main-suhas3.vercel.app",
+    ],
     allow_credentials=True,
-
     allow_methods=["*"],
-
     allow_headers=["*"],
-
 )
 # ==========================================
 # CREATE DATABASE TABLES
