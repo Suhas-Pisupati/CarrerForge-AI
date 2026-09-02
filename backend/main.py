@@ -52,7 +52,6 @@ app = FastAPI(
     title="CareerForge AI API"
 )
 
-
 # ==========================================
 # CORS CONFIGURATION
 # ==========================================
@@ -61,8 +60,10 @@ origins = [
 
     # Local React
     "http://localhost:3000",
-
     "http://127.0.0.1:3000",
+
+    # Deployed React Frontend - Vercel
+    "https://carrer-forge-ai.vercel.app",
 
 ]
 
@@ -80,8 +81,6 @@ app.add_middleware(
     allow_headers=["*"],
 
 )
-
-
 # ==========================================
 # CREATE DATABASE TABLES
 # ==========================================
