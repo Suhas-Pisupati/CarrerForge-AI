@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { filterJobs } from "../api";
 import "./JobRecommendations.css";
 
 function JobRecommendations({ result }) {
@@ -21,28 +21,56 @@ function JobRecommendations({ result }) {
   // FETCH FILTERED JOBS
   // =========================================
 
-  const fetchFilteredJobs = async (selectedExperience) => {
-    if (!result) return;
+  const fetchFilteredJobs =
+    async (selectedExperience) => {
 
-    setLoading(true);
+      if (!result) {
+        return;
+      }
 
-    try {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/jobs/filter",
-        {
-          roles: result?.roles || ["Software Engineer"],
-          experience: selectedExperience,
-        }
-      );
+      setLoading(true);
 
-      setJobs(res.data.jobs || []);
-    } catch (error) {
-      console.error("JOB FILTER ERROR:", error);
-      setJobs([]);
-    }
+      try {
 
-    setLoading(false);
-  };
+        const res =
+          await filterJobs({
+
+            // Resume-derived roles
+            roles:
+              result?.roles || [],
+
+            // Resume-derived skills
+            skills:
+              result?.skills || [],
+
+            // Selected experience
+            experience:
+              selectedExperience,
+
+          });
+
+        setJobs(
+          res?.data?.jobs ||
+          res?.jobs ||
+          []
+        );
+
+      } catch (error) {
+
+        console.error(
+          "JOB FILTER ERROR:",
+          error
+        );
+
+        setJobs([]);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
 
   // =========================================
   // EXPERIENCE CHANGE HANDLER
@@ -82,6 +110,7 @@ function JobRecommendations({ result }) {
     // =========================================
 
     if (!alreadyApplied) {
+
       // -----------------------------------------
       // SAVE APPLICATION HISTORY
       // -----------------------------------------
@@ -159,15 +188,19 @@ function JobRecommendations({ result }) {
       job.link || job.apply_link;
 
     if (applyUrl) {
+
       window.open(
         applyUrl,
         "_blank",
         "noopener,noreferrer"
       );
+
     } else {
+
       alert(
         "Application link is not available."
       );
+
     }
   };
 
@@ -176,9 +209,13 @@ function JobRecommendations({ result }) {
   // =========================================
 
   if (!result) {
+
     return (
+
       <div className="jobs-wrapper">
+
         <div className="empty-state">
+
           <h2>
             Upload your resume first
           </h2>
@@ -186,9 +223,13 @@ function JobRecommendations({ result }) {
           <p>
             Go to Home page and analyze your resume
           </p>
+
         </div>
+
       </div>
+
     );
+
   }
 
   // =========================================
@@ -196,11 +237,13 @@ function JobRecommendations({ result }) {
   // =========================================
 
   return (
+
     <div className="jobs-wrapper">
 
       {/* HEADER */}
 
       <div className="jobs-header">
+
         <h2>
           Job Recommendations
         </h2>
@@ -208,7 +251,9 @@ function JobRecommendations({ result }) {
         <p>
           Jobs matched to your resume skills
         </p>
+
       </div>
+
 
       {/* FILTER BAR */}
 
@@ -225,6 +270,7 @@ function JobRecommendations({ result }) {
             onChange={handleExperienceChange}
             className="experience-select"
           >
+
             <option value="fresher">
               Fresher
             </option>
@@ -244,27 +290,36 @@ function JobRecommendations({ result }) {
             <option value="5">
               5+ Years
             </option>
+
           </select>
 
         </div>
 
       </div>
 
+
       {/* LOADING */}
 
       {loading && (
+
         <div className="jobs-loading">
+
           Loading jobs for selected
           experience...
+
         </div>
+
       )}
+
 
       {/* JOB GRID */}
 
       {!loading && (
+
         <div className="jobs-grid">
 
           {jobs.length > 0 ? (
+
             jobs.map((job, i) => (
 
               <div
@@ -277,10 +332,13 @@ function JobRecommendations({ result }) {
                 <div className="job-top">
 
                   <h3 className="job-title">
+
                     {job.title || job.role}
+
                   </h3>
 
                 </div>
+
 
                 {/* JOB INFORMATION */}
 
@@ -296,6 +354,7 @@ function JobRecommendations({ result }) {
 
                 </div>
 
+
                 {/* APPLY BUTTON */}
 
                 <button
@@ -305,26 +364,34 @@ function JobRecommendations({ result }) {
                     handleApply(job)
                   }
                 >
+
                   Apply Now →
+
                 </button>
 
               </div>
 
             ))
+
           ) : (
 
             <p className="no-data">
+
               No jobs found for this
               experience level
+
             </p>
 
           )}
 
         </div>
+
       )}
 
     </div>
+
   );
+
 }
 
 export default JobRecommendations;

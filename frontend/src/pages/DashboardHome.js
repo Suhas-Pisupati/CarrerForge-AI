@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { getCurrentUser } from "../api";
 
 import "./DashboardHome.css";
 
@@ -186,20 +186,8 @@ function DashboardHome({
 
         try {
 
-          const response =
-            await axios.get(
-              "http://127.0.0.1:8000/auth/me",
-              {
-                headers: {
-                  Authorization:
-                    `Bearer ${token}`
-                }
-              }
-            );
-
-
           const latestUser =
-            response.data;
+            await getCurrentUser(token);
 
 
           // ==================================================
@@ -292,6 +280,7 @@ function DashboardHome({
             )
           );
 
+
         } catch (error) {
 
           console.error(
@@ -362,6 +351,7 @@ function DashboardHome({
                 parsedUser
               );
 
+
             } catch (
               storageError
             ) {
@@ -371,11 +361,13 @@ function DashboardHome({
                 storageError
               );
 
+
               setCurrentUser(
                 null
               );
 
             }
+
 
           } else {
 
@@ -384,6 +376,7 @@ function DashboardHome({
             );
 
           }
+
 
         } finally {
 
@@ -546,6 +539,7 @@ function DashboardHome({
       );
 
     };
+
 
   }, [currentUser]);
 

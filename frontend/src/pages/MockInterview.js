@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import {
+  startMockInterview,
+  evaluateMockInterview
+} from "../api";
 import { useNavigate } from "react-router-dom";
 import "./MockInterview.css";
 
 function MockInterview({ result }) {
-
   const navigate = useNavigate();
 
   const [questions, setQuestions] = useState([]);
@@ -29,7 +31,6 @@ function MockInterview({ result }) {
   // ==========================================================
 
   const getUserKey = () => {
-
     const email =
       localStorage.getItem("user_email") ||
       "guest";
@@ -39,30 +40,24 @@ function MockInterview({ result }) {
       .replace(/[^a-z0-9]/g, "_");
   };
 
-
   // ==========================================================
   // GET STORAGE KEY
   // ==========================================================
 
   const getMockScoreKey = () => {
-
     return `mockCorrectAnswers_${getUserKey()}`;
-
   };
-
 
   // ==========================================================
   // SPEECH RECOGNITION
   // ==========================================================
 
   const startVoice = () => {
-
     const SpeechRecognition =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-
       alert(
         "Voice recognition is not supported in this browser. Please use Google Chrome."
       );
@@ -74,59 +69,41 @@ function MockInterview({ result }) {
       new SpeechRecognition();
 
     recognition.lang = "en-US";
-
     recognition.continuous = false;
-
     recognition.interimResults = false;
 
     recognition.start();
 
-
     recognition.onstart = () => {
-
       console.log("Voice recognition started");
-
     };
 
-
     recognition.onresult = (event) => {
-
       const transcript =
         event.results[0][0].transcript;
 
       setAnswer((prev) => {
-
         if (prev.trim()) {
-
           return `${prev} ${transcript}`;
-
         }
 
         return transcript;
-
       });
-
     };
 
-
     recognition.onerror = (event) => {
-
       console.error(
         "Speech recognition error:",
         event.error
       );
-
     };
-
   };
-
 
   // ==========================================================
   // TEXT TO SPEECH
   // ==========================================================
 
   const speak = (text) => {
-
     if (!text) {
       return;
     }
@@ -141,22 +118,17 @@ function MockInterview({ result }) {
       new SpeechSynthesisUtterance(text);
 
     speech.lang = "en-US";
-
     speech.rate = 0.95;
-
     speech.pitch = 1;
 
     window.speechSynthesis.speak(speech);
-
   };
-
 
   // ==========================================================
   // START INTERVIEW
   // ==========================================================
 
   const startInterview = async () => {
-
     if (starting) {
       return;
     }
@@ -164,126 +136,93 @@ function MockInterview({ result }) {
     setStarting(true);
 
     try {
-
-      const res = await axios.post(
-        "http://127.0.0.1:8000/mock/start",
-        {
-          resume_text:
-            result?.analysis || ""
-        }
-      );
-
+      const res = await startMockInterview({
+        resume_text:
+          result?.analysis || ""
+      });
 
       const receivedQuestions =
-        res.data?.questions || [];
-
+        res.data?.questions ||
+        res.questions ||
+        [];
 
       if (!receivedQuestions.length) {
-
         alert(
           "No interview questions were generated. Please try again."
         );
 
         return;
-
       }
 
-
       setQuestions(receivedQuestions);
-
       setCurrent(0);
-
       setStarted(true);
-
       setCompleted(false);
-
       setScores([]);
-
       setAnswer("");
-
       setFeedback(null);
 
       countedQuestionsRef.current =
         new Set();
 
     } catch (error) {
-
       console.error(
         "Start interview error:",
         error
       );
 
       alert(
-        "Failed to start mock interview. Please check whether the backend is running."
+        error.response?.data?.detail ||
+        "Failed to start mock interview. Please check the backend connection."
       );
-
     } finally {
-
       setStarting(false);
-
     }
-
   };
-
 
   // ==========================================================
   // SPEAK QUESTION WHEN QUESTION CHANGES
   // ==========================================================
 
   useEffect(() => {
-
     if (
       started &&
       questions.length > 0 &&
       questions[current]
     ) {
-
-      const timer =
-        setTimeout(() => {
-
-          speak(
-            questions[current]
-          );
-
-        }, 500);
-
+      const timer = setTimeout(() => {
+        speak(
+          questions[current]
+        );
+      }, 500);
 
       return () => {
-
         clearTimeout(timer);
-
       };
-
     }
-
   }, [
     current,
     questions,
     started
   ]);
 
-
   // ==========================================================
   // SAVE CORRECT ANSWER
   // ==========================================================
 
   const saveCorrectAnswer = () => {
-
     const key =
       getMockScoreKey();
-
 
     const currentCount =
       Number(
         localStorage.getItem(key) || 0
       );
 
-
     localStorage.setItem(
       key,
       String(currentCount + 1)
     );
-
 
     // Also keep your old key for compatibility
     localStorage.setItem(
@@ -291,109 +230,190 @@ function MockInterview({ result }) {
       String(currentCount + 1)
     );
 
-
     window.dispatchEvent(
       new Event(
         "dashboardStatsUpdated"
       )
     );
-
   };
-
 
   // ==========================================================
   // SUBMIT ANSWER
   // ==========================================================
 
   const submitAnswer = async () => {
-
     if (!answer.trim()) {
-
       alert(
         "Please type or speak your answer first."
       );
 
       return;
-
     }
-
 
     if (!questions[current]) {
-
       return;
-
     }
-
 
     if (loading) {
-
       return;
-
     }
-
 
     setLoading(true);
 
-
     try {
-
-      const res = await axios.post(
-        "http://127.0.0.1:8000/mock/evaluate",
-        {
+      const res =
+        await evaluateMockInterview({
           question:
             questions[current],
 
           answer:
             answer
-        }
+        });
+
+      console.log(
+        "MOCK EVALUATION RESPONSE:",
+        res.data || res
       );
 
+      // ======================================================
+      // GET RAW RESPONSE
+      // ======================================================
 
-      const data =
-        res.data || {};
+      const rawData =
+        res.data || res || {};
 
+      // ======================================================
+      // HANDLE DIFFERENT BACKEND RESPONSE STRUCTURES
+      // ======================================================
 
-      setFeedback(data);
+      const evaluationData =
+        rawData.evaluation ||
+        rawData.data ||
+        (
+          typeof rawData.result === "object" &&
+          rawData.result !== null
+            ? rawData.result
+            : rawData
+        );
 
+      // ======================================================
+      // EXTRACT SCORE
+      // ======================================================
+
+      const extractedScore =
+        evaluationData.score ??
+        evaluationData.overall_score ??
+        evaluationData.rating ??
+        evaluationData.final_score ??
+        rawData.score ??
+        rawData.overall_score ??
+        rawData.rating ??
+        rawData.final_score ??
+        0;
 
       const score =
-        Number(data.score || 0);
+        Number(extractedScore) || 0;
 
+      // ======================================================
+      // EXTRACT FEEDBACK
+      // ======================================================
+
+      const extractedFeedback =
+        evaluationData.feedback ??
+        evaluationData.feedback_text ??
+        evaluationData.detailed_feedback ??
+        evaluationData.comments ??
+        evaluationData.comment ??
+        evaluationData.message ??
+        rawData.feedback ??
+        rawData.feedback_text ??
+        rawData.detailed_feedback ??
+        rawData.comments ??
+        rawData.comment ??
+        rawData.message ??
+        (
+          typeof rawData.result === "string"
+            ? rawData.result
+            : ""
+        );
+
+      // ======================================================
+      // CONVERT FEEDBACK TO STRING SAFELY
+      // ======================================================
+
+      let feedbackText =
+        extractedFeedback;
+
+      if (
+        typeof feedbackText === "object" &&
+        feedbackText !== null
+      ) {
+        feedbackText =
+          JSON.stringify(
+            feedbackText,
+            null,
+            2
+          );
+      }
+
+      if (
+        !feedbackText ||
+        String(feedbackText).trim() === ""
+      ) {
+        feedbackText =
+          "Evaluation was completed, but no detailed feedback was returned by the backend.";
+      }
+
+      // ======================================================
+      // SAVE FEEDBACK
+      // ======================================================
+
+      const normalizedFeedback = {
+        ...evaluationData,
+
+        score,
+
+        feedback:
+          String(feedbackText),
+
+        correct:
+          evaluationData.correct ??
+          evaluationData.is_correct ??
+          rawData.correct ??
+          rawData.is_correct ??
+          false
+      };
+
+      console.log(
+        "NORMALIZED MOCK EVALUATION:",
+        normalizedFeedback
+      );
+
+      setFeedback(
+        normalizedFeedback
+      );
+
+      // ======================================================
+      // SAVE SCORE
+      // ======================================================
 
       setScores((prev) => [
         ...prev,
         score
       ]);
 
-
       // ======================================================
       // DETERMINE CORRECT ANSWER
       // ======================================================
 
-      /*
-       * Backend may return:
-       *
-       * correct: true
-       *
-       * OR
-       *
-       * is_correct: true
-       *
-       * OR
-       *
-       * result: "correct"
-       *
-       * If none of those exist, use score >= 7
-       * as a reasonable fallback.
-       */
-
       const isCorrect =
-        data.correct === true ||
-        data.is_correct === true ||
-        String(data.result || "")
+        normalizedFeedback.correct === true ||
+        normalizedFeedback.is_correct === true ||
+        String(
+          normalizedFeedback.result || ""
+        )
           .toLowerCase() === "correct" ||
         score >= 7;
-
 
       // ======================================================
       // COUNT ONLY ONCE
@@ -405,15 +425,12 @@ function MockInterview({ result }) {
           current
         )
       ) {
-
         saveCorrectAnswer();
 
         countedQuestionsRef.current.add(
           current
         );
-
       }
-
 
       // ======================================================
       // LAST QUESTION
@@ -423,10 +440,8 @@ function MockInterview({ result }) {
         current >=
         questions.length - 1
       ) {
-
         const finalScores =
           [...scores, score];
-
 
         const average =
           finalScores.length > 0
@@ -438,9 +453,6 @@ function MockInterview({ result }) {
               finalScores.length
             : 0;
 
-
-        // Save interview history
-
         const history =
           JSON.parse(
             localStorage.getItem(
@@ -448,9 +460,7 @@ function MockInterview({ result }) {
             ) || "[]"
           );
 
-
         history.push({
-
           date:
             new Date().toLocaleString(),
 
@@ -459,96 +469,72 @@ function MockInterview({ result }) {
 
           totalQuestions:
             questions.length
-
         });
-
 
         localStorage.setItem(
           "interviews",
           JSON.stringify(history)
         );
 
-
         setTimeout(() => {
-
           setCompleted(true);
-
         }, 1800);
 
-
       } else {
-
-        // ==================================================
-        // NEXT QUESTION
-        // ==================================================
-
         setTimeout(() => {
-
           setAnswer("");
-
           setFeedback(null);
 
           setCurrent(
             (prev) => prev + 1
           );
-
         }, 1800);
-
       }
 
     } catch (error) {
-
       console.error(
         "Mock evaluation error:",
         error
       );
 
+      console.error(
+        "Mock backend response:",
+        error.response?.data
+      );
 
       setFeedback({
-
         score: 0,
 
         feedback:
+          error.response?.data?.detail ||
+          error.response?.data?.message ||
           "Unable to evaluate the answer. Please check the backend connection."
-
       });
 
     } finally {
-
       setLoading(false);
-
     }
-
   };
-
 
   // ==========================================================
   // FINISH INTERVIEW
   // ==========================================================
 
   const finishInterview = () => {
-
     if (window.speechSynthesis) {
-
       window.speechSynthesis.cancel();
-
     }
 
     navigate("/");
-
   };
-
 
   // ==========================================================
   // NO RESUME
   // ==========================================================
 
   if (!result) {
-
     return (
-
       <div className="mock-page">
-
         <div className="mock-empty-card">
 
           <div className="mock-empty-icon">
@@ -573,20 +559,15 @@ function MockInterview({ result }) {
           </button>
 
         </div>
-
       </div>
-
     );
-
   }
-
 
   // ==========================================================
   // COMPLETED SCREEN
   // ==========================================================
 
   if (completed) {
-
     const average =
       scores.length > 0
         ? scores.reduce(
@@ -595,9 +576,7 @@ function MockInterview({ result }) {
           ) / scores.length
         : 0;
 
-
     return (
-
       <div className="mock-page">
 
         <div className="mock-result-card">
@@ -611,7 +590,7 @@ function MockInterview({ result }) {
           </h1>
 
           <p>
-            Great job! You completed all
+            Great job! You completed all{" "}
             {questions.length} interview questions.
           </p>
 
@@ -628,12 +607,10 @@ function MockInterview({ result }) {
 
           </div>
 
-
           <div className="score-list">
 
             {scores.map(
               (score, index) => (
-
                 <div
                   key={index}
                   className="score-item"
@@ -648,12 +625,10 @@ function MockInterview({ result }) {
                   </strong>
 
                 </div>
-
               )
             )}
 
           </div>
-
 
           <button
             className="dashboard-return-btn"
@@ -665,20 +640,15 @@ function MockInterview({ result }) {
         </div>
 
       </div>
-
     );
-
   }
-
 
   // ==========================================================
   // START SCREEN
   // ==========================================================
 
   if (!started) {
-
     return (
-
       <div className="mock-page">
 
         <div className="mock-start-card">
@@ -688,28 +658,22 @@ function MockInterview({ result }) {
             onClick={startInterview}
             disabled={starting}
           >
-
             {starting
               ? "Preparing Interview..."
               : "Start Mock Interview 🎤"}
-
           </button>
 
         </div>
 
       </div>
-
     );
-
   }
-
 
   // ==========================================================
   // INTERVIEW SCREEN
   // ==========================================================
 
   return (
-
     <div className="mock-page">
 
       <div className="mock-container">
@@ -726,8 +690,8 @@ function MockInterview({ result }) {
             <p>
               Answer by typing or using your voice.
             </p>
-
           </div>
+
           <div className="progress-box">
 
             Question
@@ -741,9 +705,13 @@ function MockInterview({ result }) {
             </span>
 
           </div>
+
         </div>
+
         {/* PROGRESS */}
+
         <div className="progress-track">
+
           <div
             className="progress-fill"
             style={{
@@ -755,7 +723,9 @@ function MockInterview({ result }) {
                 }%`
             }}
           />
+
         </div>
+
         {/* QUESTION */}
 
         <div className="mock-question-card">
@@ -779,22 +749,17 @@ function MockInterview({ result }) {
 
           </div>
 
-
           <h2>
             {questions[current]}
           </h2>
 
-
           <p className="question-hint">
-
             Listen to the question or
             read it above, then submit your
             answer.
-
           </p>
 
         </div>
-
 
         {/* ANSWER */}
 
@@ -812,7 +777,6 @@ function MockInterview({ result }) {
 
           </div>
 
-
           <textarea
             value={answer}
             onChange={(e) =>
@@ -821,7 +785,6 @@ function MockInterview({ result }) {
             placeholder="Type your interview answer here..."
             disabled={loading}
           />
-
 
           <div className="answer-actions">
 
@@ -833,28 +796,23 @@ function MockInterview({ result }) {
               🎙️ Speak Answer
             </button>
 
-
             <button
               className="submit-answer-btn"
               onClick={submitAnswer}
               disabled={loading}
             >
-
               {loading
                 ? "AI Evaluating..."
                 : "Submit Answer →"}
-
             </button>
 
           </div>
 
         </div>
 
-
         {/* FEEDBACK */}
 
         {feedback && (
-
           <div className="mock-feedback-card">
 
             <div className="feedback-header">
@@ -871,34 +829,30 @@ function MockInterview({ result }) {
 
               </div>
 
-
               <div className="feedback-score">
 
                 {feedback.score || 0}
-                <small>/10</small>
+
+                <small>
+                  /10
+                </small>
 
               </div>
 
             </div>
 
-
             <div className="feedback-body">
-
               {feedback.feedback ||
                 "No feedback available."}
-
             </div>
 
           </div>
-
         )}
 
       </div>
 
     </div>
-
   );
-
 }
 
 export default MockInterview;

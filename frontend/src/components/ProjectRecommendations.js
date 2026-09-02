@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { getProjectRecommendations } from "../api";
 import "./ProjectRecommendations.css";
 
 function ProjectRecommendations({ skills }) {
@@ -13,12 +13,11 @@ function ProjectRecommendations({ skills }) {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/projects",
-        { skills }
-      );
+      const res = await getProjectRecommendations({
+        skills,
+      });
 
-      setProjects(res.data.projects || []);
+      setProjects(res.data?.projects || res.projects || []);
     } catch (error) {
       console.error("PROJECT GENERATION ERROR:", error);
       setProjects([]);
@@ -79,6 +78,7 @@ function ProjectRecommendations({ skills }) {
               <div className="project-card-body">
                 <div className="tech-stack-box">
                   <span className="label">Tech Stack</span>
+
                   <div className="value">
                     {project.tech_stack || "N/A"}
                   </div>
@@ -86,6 +86,7 @@ function ProjectRecommendations({ skills }) {
 
                 <div className="arch-box">
                   <span className="label">Architecture</span>
+
                   <div className="value">
                     {project.architecture || "N/A"}
                   </div>

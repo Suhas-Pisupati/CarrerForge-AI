@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import "./ProjectGuide.css";
 import { useLocation } from "react-router-dom";
+import { getProjectGuide } from "../api";
 
 function ProjectGuide() {
   const location = useLocation();
@@ -44,7 +44,11 @@ function ProjectGuide() {
       return (
         <ul>
           {database.map((item, index) => (
-            <li key={index}>{typeof item === "string" ? item : JSON.stringify(item)}</li>
+            <li key={index}>
+              {typeof item === "string"
+                ? item
+                : JSON.stringify(item)}
+            </li>
           ))}
         </ul>
       );
@@ -54,7 +58,10 @@ function ProjectGuide() {
       return (
         <div>
           {Object.entries(database).map(([key, value]) => (
-            <div key={key} style={{ marginBottom: "10px" }}>
+            <div
+              key={key}
+              style={{ marginBottom: "10px" }}
+            >
               <strong>{key}:</strong>{" "}
               {Array.isArray(value)
                 ? value.join(", ")
@@ -76,7 +83,9 @@ function ProjectGuide() {
     if (Array.isArray(data)) {
       return data.map((item, index) => (
         <li key={index}>
-          {typeof item === "string" ? item : JSON.stringify(item)}
+          {typeof item === "string"
+            ? item
+            : JSON.stringify(item)}
         </li>
       ));
     }
@@ -86,16 +95,18 @@ function ProjectGuide() {
     }
 
     if (typeof data === "object") {
-      return Object.entries(data).map(([key, value], index) => (
-        <li key={index}>
-          <strong>{key}:</strong>{" "}
-          {Array.isArray(value)
-            ? value.join(", ")
-            : typeof value === "object"
-            ? JSON.stringify(value)
-            : String(value)}
-        </li>
-      ));
+      return Object.entries(data).map(
+        ([key, value], index) => (
+          <li key={index}>
+            <strong>{key}:</strong>{" "}
+            {Array.isArray(value)
+              ? value.join(", ")
+              : typeof value === "object"
+              ? JSON.stringify(value)
+              : String(value)}
+          </li>
+        )
+      );
     }
 
     return <li>{String(data)}</li>;
@@ -105,145 +116,321 @@ function ProjectGuide() {
   // GENERATE GUIDE
   // =========================
   const generateGuide = async (title = projectTitle) => {
+
     if (!title || !title.trim()) {
-      alert("Please enter a project title");
+
+      alert(
+        "Please enter a project title"
+      );
+
       return;
     }
 
     setLoading(true);
+
     setGuide(null);
 
     try {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/project-guide",
-        {
-          project_title: title.trim(),
-        }
+
+      const res = await getProjectGuide({
+        project_title:
+          title.trim(),
+      });
+
+      setGuide(
+        res.data || res
       );
 
-      setGuide(res.data);
     } catch (err) {
-      console.error("PROJECT GUIDE ERROR:", err);
+
+      console.error(
+        "PROJECT GUIDE ERROR:",
+        err
+      );
+
       setGuide(null);
+
+    } finally {
+
+      setLoading(false);
+
     }
 
-    setLoading(false);
   };
+
 
   // =========================
   // AUTO LOAD IF COMING FROM DASHBOARD CARD
   // =========================
   useEffect(() => {
+
     if (incomingTitle) {
-      setProjectTitle(incomingTitle);
-      generateGuide(incomingTitle);
+
+      setProjectTitle(
+        incomingTitle
+      );
+
+      generateGuide(
+        incomingTitle
+      );
+
     }
+
   }, [incomingTitle]);
 
+
   return (
+
     <div className="project-guide-page">
+
       {/* SEARCH BAR ALWAYS SHOWS */}
+
       <div className="search-card">
+
         <input
           type="text"
           value={projectTitle}
-          onChange={(e) => setProjectTitle(e.target.value)}
+          onChange={(e) =>
+            setProjectTitle(
+              e.target.value
+            )
+          }
           placeholder="Enter any project title"
         />
 
-        <button onClick={() => generateGuide(projectTitle)}>
+        <button
+          onClick={() =>
+            generateGuide(
+              projectTitle
+            )
+          }
+        >
           Generate Guide
         </button>
+
       </div>
 
+
       {/* EMPTY STATE */}
-      {!guide && !loading && !incomingTitle && (
-        <div className="project-empty-state">
-          <h2>Project Guide Generator</h2>
-          <p>
-            Enter any project title or generated project title above and generate a complete development
-            guide with architecture, folder structure, APIs, steps, advanced
-            features and resources.
-          </p>
-        </div>
-      )}
+
+      {!guide &&
+        !loading &&
+        !incomingTitle && (
+
+          <div className="project-empty-state">
+
+            <h2>
+              Project Guide Generator
+            </h2>
+
+            <p>
+              Enter any project title or generated
+              project title above and generate a
+              complete development guide with
+              architecture, folder structure, APIs,
+              steps, advanced features and resources.
+            </p>
+
+          </div>
+
+        )}
+
 
       {/* LOADING */}
+
       {loading && (
+
         <div className="loading-box">
+
           Generating Project Guide...
+
         </div>
+
       )}
 
+
       {/* GUIDE */}
+
       {!loading && guide && (
+
         <>
+
           <div className="project-header-block">
-            <h1 className="project-main-title">{projectTitle}</h1>
+
+            <h1 className="project-main-title">
+              {projectTitle}
+            </h1>
+
             <p className="project-subtitle">
               Complete Development Guide
             </p>
+
           </div>
+
 
           <div className="guide-grid">
-            <div className="guide-card">
-              <h3>📌 Project Overview</h3>
-              <p>{guide.overview || "No overview available."}</p>
-            </div>
 
             <div className="guide-card">
-              <h3>🏗 Architecture</h3>
-              <p>{guide.architecture || "No architecture available."}</p>
+
+              <h3>
+                📌 Project Overview
+              </h3>
+
+              <p>
+                {guide.overview ||
+                  "No overview available."}
+              </p>
+
             </div>
+
+
+            <div className="guide-card">
+
+              <h3>
+                🏗 Architecture
+              </h3>
+
+              <p>
+                {guide.architecture ||
+                  "No architecture available."}
+              </p>
+
+            </div>
+
 
             <div className="guide-card full-width">
-              <h3>📂 Folder Structure</h3>
-              <pre>{renderFolderStructure(guide.folder_structure)}</pre>
+
+              <h3>
+                📂 Folder Structure
+              </h3>
+
+              <pre>
+                {renderFolderStructure(
+                  guide.folder_structure
+                )}
+              </pre>
+
             </div>
+
 
             <div className="guide-card">
-              <h3>🗄 Database Design</h3>
-              {renderDatabase(guide.database)}
-            </div>
 
-            <div className="guide-card">
-              <h3>🔗 API Endpoints</h3>
-              <ul>{renderList(guide.apis)}</ul>
-            </div>
+              <h3>
+                🗄 Database Design
+              </h3>
 
-            <div className="guide-card full-width">
-              <h3>🚀 Development Steps</h3>
-
-              {Array.isArray(guide.steps) && guide.steps.length > 0 ? (
-                guide.steps.map((step, index) => (
-                  <div key={index} className="step-item">
-                    <span className="step-number">{index + 1}</span>
-                    <span>
-                      {typeof step === "string"
-                        ? step
-                        : JSON.stringify(step)}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p>No development steps available.</p>
+              {renderDatabase(
+                guide.database
               )}
+
             </div>
 
-            <div className="guide-card">
-              <h3>⭐ Advanced Features</h3>
-              <ul>{renderList(guide.advanced_features)}</ul>
-            </div>
 
             <div className="guide-card">
-              <h3>📚 Resources</h3>
-              <ul>{renderList(guide.resources)}</ul>
+
+              <h3>
+                🔗 API Endpoints
+              </h3>
+
+              <ul>
+                {renderList(
+                  guide.apis
+                )}
+              </ul>
+
             </div>
+
+
+            <div className="guide-card full-width">
+
+              <h3>
+                🚀 Development Steps
+              </h3>
+
+
+              {Array.isArray(
+                guide.steps
+              ) &&
+              guide.steps.length > 0 ? (
+
+                guide.steps.map(
+                  (step, index) => (
+
+                    <div
+                      key={index}
+                      className="step-item"
+                    >
+
+                      <span className="step-number">
+                        {index + 1}
+                      </span>
+
+                      <span>
+
+                        {typeof step ===
+                        "string"
+                          ? step
+                          : JSON.stringify(
+                              step
+                            )}
+
+                      </span>
+
+                    </div>
+
+                  )
+
+                )
+
+              ) : (
+
+                <p>
+                  No development steps available.
+                </p>
+
+              )}
+
+            </div>
+
+
+            <div className="guide-card">
+
+              <h3>
+                ⭐ Advanced Features
+              </h3>
+
+              <ul>
+                {renderList(
+                  guide.advanced_features
+                )}
+              </ul>
+
+            </div>
+
+
+            <div className="guide-card">
+
+              <h3>
+                📚 Resources
+              </h3>
+
+              <ul>
+                {renderList(
+                  guide.resources
+                )}
+              </ul>
+
+            </div>
+
           </div>
-        </>
-      )}
-    </div>
-  );
-}
 
+        </>
+
+      )}
+
+    </div>
+
+  );
+
+}
 export default ProjectGuide;
