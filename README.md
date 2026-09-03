@@ -493,4 +493,4 @@ If you find this project useful, consider giving the repository a ⭐ on GitHub.
 
 This project is developed for educational and portfolio purposes.
 
-https://github.com/suhaspisupati/Career-Forge-AI.git
+https://github.com/Suhas-Pisupati/CarrerForge-AI
