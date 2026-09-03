@@ -210,7 +210,7 @@ All application screenshots are available in the `screenshots/` folder.
 
 ## 🧠 Interview Preparation
 
-![Interview Preparation](screenshots/interview-preparation.png)
+![Interview Preparation](screenshots/interview.png)
 
 ---
 
@@ -222,13 +222,13 @@ All application screenshots are available in the `screenshots/` folder.
 
 ## 💻 AI Coding Interview
 
-![AI Coding Interview](screenshots/coding-interview.png)
+![AI Coding Interview](screenshots/coding-round.png)
 
 ---
 
 ## 💼 Job Recommendations
 
-![Job Recommendations](screenshots/job-recommendations.png)
+![Job Recommendations](screenshots/jobs.png)
 
 ---
 
