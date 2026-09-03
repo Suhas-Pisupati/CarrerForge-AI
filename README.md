@@ -360,3 +360,137 @@ Career-Forge-AI/
 │
 ├── README.md
 └── .gitignore
+⚙️ Local Installation
+
+1. Clone the repository
+git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+cd Career-Forge-AI
+
+🔧 Backend Setup
+
+Go to the backend directory:
+
+cd backend
+
+Create a virtual environment:
+
+python -m venv venv
+
+Activate it on Windows:
+
+venv\Scripts\activate
+
+Install dependencies:
+
+pip install -r requirements.txt
+
+🔑 Environment Variables
+
+Create:
+
+backend/.env
+
+Add:
+
+GROQ_API_KEY=your_groq_api_key
+
+Never commit your .env file to GitHub.
+
+▶️ Run Backend
+uvicorn main:app --reload
+
+Backend will run at:
+
+http://127.0.0.1:8000
+
+API documentation:
+
+http://127.0.0.1:8000/docs
+
+💻 Frontend Setup
+
+Open another terminal.
+
+cd frontend
+
+Install dependencies:
+
+npm install
+
+Create:
+
+frontend/.env
+
+Add:
+
+REACT_APP_API_URL=http://127.0.0.1:8000
+
+Run the frontend:
+
+npm start
+
+The application will open at:
+
+http://localhost:
+
+🔐 Security
+
+API keys and environment variables are not included in the repository.
+
+Sensitive configuration is stored using environment variables.
+
+Example:
+
+GROQ_API_KEY=your_api_key
+
+🚀 Deployment
+
+The application is deployed using:
+
+Frontend
+
+Vercel
+
+Backend
+
+Render
+
+AI
+
+Groq API
+
+🎯Future Improvements
+
+Possible future improvements include:
+
+Advanced coding sandbox
+More programming languages
+Detailed interview analytics
+Resume version comparison
+Interview performance dashboard
+More job sources
+Personalized learning recommendations
+Advanced authentication
+Database-backed user profiles
+
+👨‍💻 Developer
+Sai Suhas Pisupati
+B.Tech Computer Science & Engineering Graduate
+
+Interested in:
+
+Python Development
+AI/ML
+Backend Development
+Software Engineering
+Generative AI
+
+⭐ Support
+
+If you find this project useful, consider giving the repository a ⭐ on GitHub.
+
+📜 License
+
+This project is developed for educational and portfolio purposes.
+
+https://github.com/suhaspisupati/Career-Forge-AI.git
