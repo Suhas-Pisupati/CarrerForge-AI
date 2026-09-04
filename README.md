@@ -279,7 +279,7 @@ All application screenshots are available in the `screenshots/` folder.
                          │    Groq API      │
                          │      LLM         │
                          └──────────────────┘
-🛠️ Technology Stack
+# 🛠️ Technology Stack
 Frontend
 React.js
 JavaScript
@@ -309,7 +309,8 @@ Deployment
 Vercel
 Render
 
-📂 Project Structure
+# 📂 Project Structure
+
 Career-Forge-AI/
 │
 ├── backend/
@@ -360,13 +361,14 @@ Career-Forge-AI/
 │
 ├── README.md
 └── .gitignore
-⚙️ Local Installation
+
+# ⚙️ Local Installation
 
 1. Clone the repository
 git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
 cd Career-Forge-AI
 
-🔧 Backend Setup
+# 🔧 Backend Setup
 
 Go to the backend directory:
 
@@ -384,7 +386,7 @@ Install dependencies:
 
 pip install -r requirements.txt
 
-🔑 Environment Variables
+# 🔑 Environment Variables
 
 Create:
 
@@ -396,7 +398,7 @@ GROQ_API_KEY=your_groq_api_key
 
 Never commit your .env file to GitHub.
 
-▶️ Run Backend
+# ▶️ Run Backend
 uvicorn main:app --reload
 
 Backend will run at:
@@ -407,7 +409,7 @@ API documentation:
 
 http://127.0.0.1:8000/docs
 
-💻 Frontend Setup
+# 💻 Frontend Setup
 
 Open another terminal.
 
@@ -433,7 +435,7 @@ The application will open at:
 
 http://localhost:
 
-🔐 Security
+# 🔐 Security
 
 API keys and environment variables are not included in the repository.
 
@@ -443,7 +445,7 @@ Example:
 
 GROQ_API_KEY=your_api_key
 
-🚀 Deployment
+# 🚀 Deployment
 
 The application is deployed using:
 
@@ -459,7 +461,7 @@ AI
 
 Groq API
 
-🎯Future Improvements
+# 🎯 Future Improvements
 
 Possible future improvements include:
 
@@ -473,7 +475,7 @@ Personalized learning recommendations
 Advanced authentication
 Database-backed user profiles
 
-👨‍💻 Developer
+# 👨‍💻 Developer
 Sai Suhas Pisupati
 B.Tech Computer Science & Engineering Graduate
 
@@ -485,11 +487,11 @@ Backend Development
 Software Engineering
 Generative AI
 
-⭐ Support
+# ⭐ Support
 
 If you find this project useful, consider giving the repository a ⭐ on GitHub.
 
-📜 License
+# 📜 License
 
 This project is developed for educational and portfolio purposes.
 
