@@ -280,7 +280,7 @@ All application screenshots are available in the `screenshots/` folder.
                          │      LLM         │
                          └──────────────────┘
 
-## 🛠️ Technology Stack
+# 🛠️ Technology Stack
 ### Frontend
 - React.js
 - JavaScript
@@ -288,11 +288,13 @@ All application screenshots are available in the `screenshots/` folder.
 - CSS3
 - Axios
 - React Router
+
 ### Backend
 - Python
 - FastAPI
 - REST APIs
 - Uvicorn
+
 ### Artificial Intelligence
 - Groq API
 - Large Language Models (LLMs)
@@ -303,14 +305,17 @@ All application screenshots are available in the `screenshots/` folder.
 - Skill Extraction
 - Resume Analysis
 - ATS Analysis
+
 ### Database / Storage
 - User Authentication Storage
 - Browser Local Storage where applicable
+
 ### Deployment
 - Vercel
 - Render
 
-📂 Project Structure
+# 📂 Project Structure
+
 Career-Forge-AI/
 │
 ├── backend/
@@ -362,132 +367,131 @@ Career-Forge-AI/
 ├── README.md
 └── .gitignore
 
-⚙️ Local Installation
+# ⚙️ Local Installation
 
-1. Clone the repository
+### 1. Clone the repository
     git clone https://github.com/Suhas-Pisupati/CarrerForge-AI
     cd Career-Forge-AI
 
-🔧 Backend Setup
+# 🔧 Backend Setup
 
-Go to the backend directory:
+### Go to the backend directory:
 
     cd backend
 
-Create a virtual environment:
+### Create a virtual environment:
 
    python -m venv venv
 
-Activate it on Windows:
+### Activate it on Windows:
 
- venv\Scripts\activate
+   venv\Scripts\activate
 
-Install dependencies:
+### Install dependencies:
 
- pip install -r requirements.txt
+   pip install -r requirements.txt
 
-🔑 Environment Variables
+# 🔑 Environment Variables
 
-Create:
+### Create:
 
- backend/.env
+  backend/.env
 
-Add:
+### Add:
 
- GROQ_API_KEY=your_groq_api_key
+  GROQ_API_KEY=your_groq_api_key
 
-▶️ Run Backend
+# ▶️ Run Backend
 
-uvicorn main:app --reload
+  uvicorn main:app --reload
 
-Backend will run at:
+## Backend will run at:
 
- http://127.0.0.1:8000
+  http://127.0.0.1:8000
 
-API documentation:
+## API documentation:
 
- http://127.0.0.1:8000/docs
+  http://127.0.0.1:8000/docs
 
-💻 Frontend Setup
+# 💻 Frontend Setup
 
-Open another terminal.
+### Open another terminal.
 
- cd frontend
+  cd frontend
 
-Install dependencies:
+### Install dependencies:
 
- npm install
+  npm install
 
-Create:
+### Create:
 
- frontend/.env
+  frontend/.env
 
-Add:
+### Add:
 
- REACT_APP_API_URL=http://127.0.0.1:8000
+  REACT_APP_API_URL=http://127.0.0.1:8000
 
-Run the frontend:
+### Run the frontend:
 
- npm start
+  npm start
 
-The application will open at:
+### The application will open at:
 
- http://localhost:
+  http://localhost:
 
-🔐 Security
+# 🔐 Security
 
 API keys and environment variables are not included in the repository.
 
 Sensitive configuration is stored using environment variables.
 
 
-🚀 Deployment
+# 🚀 Deployment
 
-The application is deployed using:
+### The application is deployed using:
 
-Frontend
+- Frontend
 
-Vercel
+- Vercel
 
-Backend
+- Backend
 
-Render
+- Render
 
-AI
+- AI
 
-Groq API
+- Groq API
 
-🎯Future Improvements
+# 🎯 Future Improvements
 
-Possible future improvements include:
+- Possible future improvements include:
+- Advanced coding sandbox
+- More programming languages
+- Detailed interview analytics
+- Resume version comparison
+- Interview performance dashboard
+- More job sources
+- Personalized learning recommendations
+- Advanced authentication
+- Database-backed user profiles
 
-Advanced coding sandbox
-More programming languages
-Detailed interview analytics
-Resume version comparison
-Interview performance dashboard
-More job sources
-Personalized learning recommendations
-Advanced authentication
-Database-backed user profiles
+# 👨‍💻 Developer
+- Sai Suhas Pisupati
+- B.Tech Computer Science & Engineering - AIML Graduate
 
-👨‍💻 Developer
-Sai Suhas Pisupati
-B.Tech Computer Science & Engineering Graduate
+### Interested in:
 
-Interested in:
+- Python Development
+- AI/ML
+- Backend Development
+- Software Engineering
+- Generative AI
 
-Python Development
-AI/ML
-Backend Development
-Software Engineering
-Generative AI
-
-⭐ Support
+# ⭐ Support
 
 If you find this project useful, consider giving the repository a ⭐ on GitHub.
 
-📜 License
+# 📜 License
 
 This project is developed for educational and portfolio purposes.
 
