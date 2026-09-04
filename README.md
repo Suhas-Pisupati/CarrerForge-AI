@@ -279,35 +279,36 @@ All application screenshots are available in the `screenshots/` folder.
                          │    Groq API      │
                          │      LLM         │
                          └──────────────────┘
-🛠️ Technology Stack
-Frontend
-React.js
-JavaScript
-HTML5
-CSS3
-Axios
-React Router
-Backend
-Python
-FastAPI
-REST APIs
-Uvicorn
-Artificial Intelligence
-Groq API
-Large Language Models (LLMs)
-AI Prompt Engineering
-Resume Processing
-PDF Resume Parsing
-Resume Text Extraction
-Skill Extraction
-Resume Analysis
-ATS Analysis
-Database / Storage
-User Authentication Storage
-Browser Local Storage where applicable
-Deployment
-Vercel
-Render
+
+## 🛠️ Technology Stack
+### Frontend
+- React.js
+- JavaScript
+- HTML5
+- CSS3
+- Axios
+- React Router
+### Backend
+- Python
+- FastAPI
+- REST APIs
+- Uvicorn
+### Artificial Intelligence
+- Groq API
+- Large Language Models (LLMs)
+- AI Prompt Engineering
+- Resume Processing
+- PDF Resume Parsing
+- Resume Text Extraction
+- Skill Extraction
+- Resume Analysis
+- ATS Analysis
+### Database / Storage
+- User Authentication Storage
+- Browser Local Storage where applicable
+### Deployment
+- Vercel
+- Render
 
 📂 Project Structure
 Career-Forge-AI/
@@ -360,78 +361,78 @@ Career-Forge-AI/
 │
 ├── README.md
 └── .gitignore
+
 ⚙️ Local Installation
 
 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
-cd Career-Forge-AI
+    git clone https://github.com/Suhas-Pisupati/CarrerForge-AI
+    cd Career-Forge-AI
 
 🔧 Backend Setup
 
 Go to the backend directory:
 
-cd backend
+    cd backend
 
 Create a virtual environment:
 
-python -m venv venv
+   python -m venv venv
 
 Activate it on Windows:
 
-venv\Scripts\activate
+ venv\Scripts\activate
 
 Install dependencies:
 
-pip install -r requirements.txt
+ pip install -r requirements.txt
 
 🔑 Environment Variables
 
 Create:
 
-backend/.env
+ backend/.env
 
 Add:
 
-GROQ_API_KEY=your_groq_api_key
-
-Never commit your .env file to GitHub.
+ GROQ_API_KEY=your_groq_api_key
 
 ▶️ Run Backend
+
 uvicorn main:app --reload
 
 Backend will run at:
 
-http://127.0.0.1:8000
+ http://127.0.0.1:8000
 
 API documentation:
 
-http://127.0.0.1:8000/docs
+ http://127.0.0.1:8000/docs
 
 💻 Frontend Setup
 
 Open another terminal.
 
-cd frontend
+ cd frontend
 
 Install dependencies:
 
-npm install
+ npm install
 
 Create:
 
-frontend/.env
+ frontend/.env
 
 Add:
 
-REACT_APP_API_URL=http://127.0.0.1:8000
+ REACT_APP_API_URL=http://127.0.0.1:8000
 
 Run the frontend:
 
-npm start
+ npm start
 
 The application will open at:
 
-http://localhost:
+ http://localhost:
 
 🔐 Security
 
@@ -439,9 +440,6 @@ API keys and environment variables are not included in the repository.
 
 Sensitive configuration is stored using environment variables.
 
-Example:
-
-GROQ_API_KEY=your_api_key
 
 🚀 Deployment
 
