@@ -1,3 +1,5 @@
+from django.utils import text
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -157,7 +159,7 @@ async def analyze(file: UploadFile = File(...)):
         skills = extract_skills(text)
 
         if not skills:
-            skills = ["Python", "Java"]
+            skills = []
 
         # QUESTIONS
         questions = generate_interview_questions(text)
