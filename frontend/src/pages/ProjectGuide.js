@@ -1,201 +1,712 @@
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect
+} from "react";
+
 import "./ProjectGuide.css";
-import { useLocation } from "react-router-dom";
-import { getProjectGuide } from "../api";
 
-function ProjectGuide() {
-  const location = useLocation();
+import {
+  useLocation
+} from "react-router-dom";
 
-  const incomingTitle = location.state?.projectTitle || "";
+import {
+  getProjectGuide
+} from "../api";
 
-  const [projectTitle, setProjectTitle] = useState(incomingTitle);
-  const [guide, setGuide] = useState(null);
-  const [loading, setLoading] = useState(false);
+function ProjectGuide({
+  result
+}) {
 
-  // =========================
-  // FORMAT HELPERS
-  // =========================
-  const renderFolderStructure = (folderStructure) => {
-    if (!folderStructure) return "No folder structure available.";
+  const location =
+    useLocation();
 
-    if (typeof folderStructure === "string") {
-      return folderStructure;
-    }
+  // ==========================================================
+  // CURRENT PROJECT
+  // ==========================================================
 
-    if (Array.isArray(folderStructure)) {
-      return folderStructure.join("\n");
-    }
+  const incomingTitle =
+    location.state?.projectTitle ||
+    "";
 
-    if (typeof folderStructure === "object") {
-      return JSON.stringify(folderStructure, null, 2);
-    }
+  /*
+   * IMPORTANT:
+   *
+   * The current resume from App.js
+   * is the primary source.
+   *
+   * Navigation state is only used
+   * for the selected project title
+   * and as a fallback for skills.
+   */
 
-    return String(folderStructure);
-  };
+  const currentSkills =
+    Array.isArray(
+      result?.skills
+    )
+      ? result.skills
+      : (
+          Array.isArray(
+            location.state?.skills
+          )
+            ? location.state.skills
+            : []
+        );
 
-  const renderDatabase = (database) => {
-    if (!database) return <p>No database details available.</p>;
+  const currentResumeText =
+    result?.resume_text ||
+    location.state?.resumeText ||
+    "";
 
-    if (typeof database === "string") {
-      return <p>{database}</p>;
-    }
+  const currentResumeId =
+    result?.resume_id ||
+    location.state?.resumeId ||
+    "";
 
-    if (Array.isArray(database)) {
-      return (
-        <ul>
-          {database.map((item, index) => (
-            <li key={index}>
-              {typeof item === "string"
-                ? item
-                : JSON.stringify(item)}
-            </li>
-          ))}
-        </ul>
-      );
-    }
+  // ==========================================================
+  // STATE
+  // ==========================================================
 
-    if (typeof database === "object") {
-      return (
-        <div>
-          {Object.entries(database).map(([key, value]) => (
-            <div
-              key={key}
-              style={{ marginBottom: "10px" }}
-            >
-              <strong>{key}:</strong>{" "}
-              {Array.isArray(value)
-                ? value.join(", ")
-                : typeof value === "object"
-                ? JSON.stringify(value)
-                : String(value)}
-            </div>
-          ))}
-        </div>
-      );
-    }
+  const [
+    projectTitle,
+    setProjectTitle
+  ] = useState(
+    incomingTitle
+  );
 
-    return <p>{String(database)}</p>;
-  };
+  const [
+    skills,
+    setSkills
+  ] = useState(
+    currentSkills
+  );
 
-  const renderList = (data) => {
-    if (!data) return <li>No data available</li>;
+  const [
+    guide,
+    setGuide
+  ] = useState(null);
 
-    if (Array.isArray(data)) {
-      return data.map((item, index) => (
-        <li key={index}>
-          {typeof item === "string"
-            ? item
-            : JSON.stringify(item)}
-        </li>
-      ));
-    }
+  const [
+    loading,
+    setLoading
+  ] = useState(false);
 
-    if (typeof data === "string") {
-      return <li>{data}</li>;
-    }
+  // ==========================================================
+  // KEEP CURRENT RESUME CONTEXT UPDATED
+  // ==========================================================
 
-    if (typeof data === "object") {
-      return Object.entries(data).map(
-        ([key, value], index) => (
-          <li key={index}>
-            <strong>{key}:</strong>{" "}
-            {Array.isArray(value)
-              ? value.join(", ")
-              : typeof value === "object"
-              ? JSON.stringify(value)
-              : String(value)}
-          </li>
-        )
-      );
-    }
+  useEffect(() => {
 
-    return <li>{String(data)}</li>;
-  };
+    /*
+     * When a completely new resume is
+     * uploaded, update the project
+     * guide's skills.
+     */
 
-  // =========================
-  // GENERATE GUIDE
-  // =========================
-  const generateGuide = async (title = projectTitle) => {
+    setSkills(
+      Array.isArray(
+        result?.skills
+      )
+        ? [
+            ...result.skills
+          ]
+        : []
+    );
 
-    if (!title || !title.trim()) {
-
-      alert(
-        "Please enter a project title"
-      );
-
-      return;
-    }
-
-    setLoading(true);
+    /*
+     * Clear an old guide when the
+     * resume changes.
+     */
 
     setGuide(null);
 
-    try {
+  }, [
+    result?.resume_id
+  ]);
 
-      const res = await getProjectGuide({
-        project_title:
-          title.trim(),
-      });
+  // ==========================================================
+  // FOLDER STRUCTURE FORMATTER
+  // ==========================================================
+
+  const renderFolderStructure =
+    (
+      folderStructure
+    ) => {
+
+      if (
+        !folderStructure
+      ) {
+        return "No folder structure available.";
+      }
+
+      if (
+        typeof folderStructure ===
+        "string"
+      ) {
+        return folderStructure;
+      }
+
+      if (
+        Array.isArray(
+          folderStructure
+        )
+      ) {
+        return folderStructure.join(
+          "\n"
+        );
+      }
+
+      if (
+        typeof folderStructure ===
+        "object"
+      ) {
+        return JSON.stringify(
+          folderStructure,
+          null,
+          2
+        );
+      }
+
+      return String(
+        folderStructure
+      );
+    };
+
+  // ==========================================================
+  // DATABASE FORMATTER
+  // ==========================================================
+
+  const renderDatabase =
+    (database) => {
+
+      if (!database) {
+
+        return (
+          <p>
+            No database details available.
+          </p>
+        );
+      }
+
+      if (
+        typeof database ===
+        "string"
+      ) {
+
+        return (
+          <p>
+            {database}
+          </p>
+        );
+      }
+
+      if (
+        Array.isArray(
+          database
+        )
+      ) {
+
+        return (
+          <ul>
+
+            {database.map(
+              (
+                item,
+                index
+              ) => (
+
+                <li key={index}>
+
+                  {typeof item ===
+                  "string"
+                    ? item
+                    : JSON.stringify(
+                        item
+                      )}
+
+                </li>
+
+              )
+            )}
+
+          </ul>
+        );
+      }
+
+      if (
+        typeof database ===
+        "object"
+      ) {
+
+        return (
+          <div>
+
+            {Object.entries(
+              database
+            ).map(
+              ([
+                key,
+                value
+              ]) => (
+
+                <div
+                  key={key}
+                  style={{
+                    marginBottom:
+                      "10px"
+                  }}
+                >
+
+                  <strong>
+                    {key}:
+                  </strong>{" "}
+
+                  {Array.isArray(
+                    value
+                  )
+                    ? value.join(
+                        ", "
+                      )
+                    : typeof value ===
+                        "object" &&
+                      value !== null
+                    ? JSON.stringify(
+                        value
+                      )
+                    : String(
+                        value
+                      )}
+
+                </div>
+
+              )
+            )}
+
+          </div>
+        );
+      }
+
+      return (
+        <p>
+          {String(database)}
+        </p>
+      );
+    };
+
+  // ==========================================================
+  // GENERIC LIST FORMATTER
+  // ==========================================================
+
+  const renderList =
+    (data) => {
+
+      if (!data) {
+
+        return (
+          <li>
+            No data available
+          </li>
+        );
+      }
+
+      if (
+        Array.isArray(
+          data
+        )
+      ) {
+
+        return data.map(
+          (
+            item,
+            index
+          ) => (
+
+            <li key={index}>
+
+              {typeof item ===
+              "string"
+                ? item
+                : JSON.stringify(
+                    item
+                  )}
+
+            </li>
+
+          )
+        );
+      }
+
+      if (
+        typeof data ===
+        "string"
+      ) {
+
+        return (
+          <li>
+            {data}
+          </li>
+        );
+      }
+
+      if (
+        typeof data ===
+          "object" &&
+        data !== null
+      ) {
+
+        return Object.entries(
+          data
+        ).map(
+          (
+            [
+              key,
+              value
+            ],
+            index
+          ) => (
+
+            <li key={index}>
+
+              <strong>
+                {key}:
+              </strong>{" "}
+
+              {Array.isArray(
+                value
+              )
+                ? value.join(
+                    ", "
+                  )
+                : typeof value ===
+                    "object" &&
+                  value !== null
+                ? JSON.stringify(
+                    value
+                  )
+                : String(
+                    value
+                  )}
+
+            </li>
+
+          )
+        );
+      }
+
+      return (
+        <li>
+          {String(data)}
+        </li>
+      );
+    };
+
+  // ==========================================================
+  // GENERATE PROJECT GUIDE
+  // ==========================================================
+
+  const generateGuide =
+    async (
+      title = projectTitle
+    ) => {
+
+      if (
+        !title ||
+        !title.trim()
+      ) {
+
+        alert(
+          "Please enter a project title"
+        );
+
+        return;
+      }
+
+      if (
+        !Array.isArray(
+          skills
+        ) ||
+        skills.length === 0
+      ) {
+
+        alert(
+          "No current resume skills are available. Please upload and analyze your resume first."
+        );
+
+        return;
+      }
+
+      setLoading(
+        true
+      );
 
       setGuide(
-        res.data || res
+        null
       );
 
-    } catch (err) {
+      try {
 
-      console.error(
-        "PROJECT GUIDE ERROR:",
-        err
-      );
+        const userSkills =
+          Array.isArray(
+            skills
+          )
+            ? [
+                ...skills
+              ]
+            : [];
 
-      setGuide(null);
+        console.log(
+          "PROJECT GUIDE CURRENT RESUME:",
+          currentResumeId
+        );
 
-    } finally {
+        console.log(
+          "PROJECT GUIDE CURRENT SKILLS:",
+          userSkills
+        );
 
-      setLoading(false);
+        console.log(
+          "PROJECT GUIDE TITLE:",
+          title.trim()
+        );
 
-    }
+        const res =
+          await getProjectGuide({
 
-  };
+            /*
+             * CURRENT PROJECT
+             */
 
+            project_title:
+              title.trim(),
 
-  // =========================
-  // AUTO LOAD IF COMING FROM DASHBOARD CARD
-  // =========================
+            /*
+             * CURRENT RESUME
+             */
+
+            skills:
+              userSkills,
+
+            resume_text:
+              currentResumeText,
+
+            resume_id:
+              currentResumeId
+
+          });
+
+        console.log(
+          "PROJECT GUIDE RESPONSE:",
+          res.data || res
+        );
+
+        setGuide(
+          res.data || res
+        );
+
+      } catch (error) {
+
+        console.error(
+          "PROJECT GUIDE ERROR:",
+          error
+        );
+
+        console.error(
+          "Project guide backend response:",
+          error.response?.data
+        );
+
+        alert(
+          error.response?.data?.detail ||
+          error.response?.data?.message ||
+          "Unable to generate project guide."
+        );
+
+        setGuide(
+          null
+        );
+
+      } finally {
+
+        setLoading(
+          false
+        );
+      }
+    };
+
+  // ==========================================================
+  // AUTO GENERATE FROM PROJECT RECOMMENDATION
+  // ==========================================================
+
   useEffect(() => {
 
-    if (incomingTitle) {
-
-      setProjectTitle(
-        incomingTitle
-      );
-
-      generateGuide(
-        incomingTitle
-      );
-
+    if (
+      !incomingTitle
+    ) {
+      return;
     }
 
-  }, [incomingTitle]);
+    const title =
+      incomingTitle.trim();
 
+    if (!title) {
+      return;
+    }
+
+    /*
+     * Do not automatically use
+     * old resume data.
+     *
+     * Always take current result
+     * first.
+     */
+
+    const userSkills =
+      Array.isArray(
+        result?.skills
+      )
+        ? [
+            ...result.skills
+          ]
+        : (
+            Array.isArray(
+              location.state?.skills
+            )
+              ? [
+                  ...location.state.skills
+                ]
+              : []
+          );
+
+    setProjectTitle(
+      title
+    );
+
+    setSkills(
+      userSkills
+    );
+
+    if (
+      userSkills.length === 0
+    ) {
+      return;
+    }
+
+    const loadGuide =
+      async () => {
+
+        setLoading(
+          true
+        );
+
+        setGuide(
+          null
+        );
+
+        try {
+
+          console.log(
+            "AUTO PROJECT GUIDE RESUME:",
+            currentResumeId
+          );
+
+          console.log(
+            "AUTO PROJECT GUIDE SKILLS:",
+            userSkills
+          );
+
+          const res =
+            await getProjectGuide({
+
+              project_title:
+                title,
+
+              skills:
+                userSkills,
+
+              resume_text:
+                currentResumeText,
+
+              resume_id:
+                currentResumeId
+
+            });
+
+          console.log(
+            "AUTO PROJECT GUIDE RESPONSE:",
+            res.data || res
+          );
+
+          setGuide(
+            res.data || res
+          );
+
+        } catch (error) {
+
+          console.error(
+            "AUTO PROJECT GUIDE ERROR:",
+            error
+          );
+
+          console.error(
+            "Project guide backend response:",
+            error.response?.data
+          );
+
+          setGuide(
+            null
+          );
+
+        } finally {
+
+          setLoading(
+            false
+          );
+        }
+      };
+
+    loadGuide();
+
+    /*
+     * We intentionally react to
+     * project title + current resume.
+     */
+
+  }, [
+    incomingTitle,
+    result?.resume_id
+  ]);
+
+  // ==========================================================
+  // UI
+  // ==========================================================
 
   return (
 
-    <div className="project-guide-page">
+    <div
+      className=
+        "project-guide-page"
+    >
 
-      {/* SEARCH BAR ALWAYS SHOWS */}
+      {/* ======================================================
+          SEARCH BAR
+      ====================================================== */}
 
-      <div className="search-card">
+      <div
+        className=
+          "search-card"
+      >
 
         <input
           type="text"
-          value={projectTitle}
-          onChange={(e) =>
+          value={
+            projectTitle
+          }
+          onChange={(event) =>
             setProjectTitle(
-              e.target.value
+              event.target.value
             )
           }
-          placeholder="Enter any project title"
+          placeholder=
+            "Enter any project title"
         />
 
         <button
@@ -204,233 +715,379 @@ function ProjectGuide() {
               projectTitle
             )
           }
+          disabled={
+            loading
+          }
         >
-          Generate Guide
+
+          {loading
+            ? "Generating..."
+            : "Generate Guide"}
+
         </button>
 
       </div>
 
+      {/* ======================================================
+          CURRENT SKILLS
+      ====================================================== */}
 
-      {/* EMPTY STATE */}
+      {skills.length > 0 && (
+
+        <div
+          style={{
+            display:
+              "flex",
+            flexWrap:
+              "wrap",
+            gap:
+              "8px",
+            margin:
+              "15px 0"
+          }}
+        >
+
+          {skills.map(
+            (
+              skill,
+              index
+            ) => (
+
+              <span
+                key={index}
+                style={{
+                  padding:
+                    "6px 12px",
+                  borderRadius:
+                    "20px",
+                  background:
+                    "#eef7ef",
+                  color:
+                    "#218838",
+                  fontSize:
+                    "13px"
+                }}
+              >
+                {skill}
+              </span>
+
+            )
+          )}
+
+        </div>
+
+      )}
+
+      {/* ======================================================
+          EMPTY STATE
+      ====================================================== */}
 
       {!guide &&
         !loading &&
         !incomingTitle && (
 
-          <div className="project-empty-state">
+          <div
+            className=
+              "project-empty-state"
+          >
 
             <h2>
               Project Guide Generator
             </h2>
 
             <p>
-              Enter any project title or generated
-              project title above and generate a
-              complete development guide with
-              architecture, folder structure, APIs,
-              steps, advanced features and resources.
+              Enter any project title
+              or generated project title
+              above and generate a
+              complete development guide
+              with architecture, folder
+              structure, APIs, steps,
+              advanced features and
+              resources.
             </p>
 
           </div>
 
         )}
 
-
-      {/* LOADING */}
+      {/* ======================================================
+          LOADING
+      ====================================================== */}
 
       {loading && (
 
-        <div className="loading-box">
-
+        <div
+          className=
+            "loading-box"
+        >
           Generating Project Guide...
-
         </div>
 
       )}
 
+      {/* ======================================================
+          GUIDE
+      ====================================================== */}
 
-      {/* GUIDE */}
+      {!loading &&
+        guide && (
 
-      {!loading && guide && (
+          <>
 
-        <>
+            {/* ==================================================
+                HEADER
+            ================================================== */}
 
-          <div className="project-header-block">
+            <div
+              className=
+                "project-header-block"
+            >
 
-            <h1 className="project-main-title">
-              {projectTitle}
-            </h1>
+              <h1
+                className=
+                  "project-main-title"
+              >
+                {projectTitle}
+              </h1>
 
-            <p className="project-subtitle">
-              Complete Development Guide
-            </p>
-
-          </div>
-
-
-          <div className="guide-grid">
-
-            <div className="guide-card">
-
-              <h3>
-                📌 Project Overview
-              </h3>
-
-              <p>
-                {guide.overview ||
-                  "No overview available."}
+              <p
+                className=
+                  "project-subtitle"
+              >
+                Complete Development Guide
               </p>
 
             </div>
 
+            {/* ==================================================
+                GUIDE GRID
+            ================================================== */}
 
-            <div className="guide-card">
+            <div
+              className=
+                "guide-grid"
+            >
 
-              <h3>
-                🏗 Architecture
-              </h3>
+              {/* =================================================
+                  OVERVIEW
+              ================================================= */}
 
-              <p>
-                {guide.architecture ||
-                  "No architecture available."}
-              </p>
+              <div
+                className=
+                  "guide-card"
+              >
 
-            </div>
-
-
-            <div className="guide-card full-width">
-
-              <h3>
-                📂 Folder Structure
-              </h3>
-
-              <pre>
-                {renderFolderStructure(
-                  guide.folder_structure
-                )}
-              </pre>
-
-            </div>
-
-
-            <div className="guide-card">
-
-              <h3>
-                🗄 Database Design
-              </h3>
-
-              {renderDatabase(
-                guide.database
-              )}
-
-            </div>
-
-
-            <div className="guide-card">
-
-              <h3>
-                🔗 API Endpoints
-              </h3>
-
-              <ul>
-                {renderList(
-                  guide.apis
-                )}
-              </ul>
-
-            </div>
-
-
-            <div className="guide-card full-width">
-
-              <h3>
-                🚀 Development Steps
-              </h3>
-
-
-              {Array.isArray(
-                guide.steps
-              ) &&
-              guide.steps.length > 0 ? (
-
-                guide.steps.map(
-                  (step, index) => (
-
-                    <div
-                      key={index}
-                      className="step-item"
-                    >
-
-                      <span className="step-number">
-                        {index + 1}
-                      </span>
-
-                      <span>
-
-                        {typeof step ===
-                        "string"
-                          ? step
-                          : JSON.stringify(
-                              step
-                            )}
-
-                      </span>
-
-                    </div>
-
-                  )
-
-                )
-
-              ) : (
+                <h3>
+                  📌 Project Overview
+                </h3>
 
                 <p>
-                  No development steps available.
+                  {guide.overview ||
+                    "No overview available."}
                 </p>
 
-              )}
+              </div>
 
-            </div>
+              {/* =================================================
+                  ARCHITECTURE
+              ================================================= */}
 
+              <div
+                className=
+                  "guide-card"
+              >
 
-            <div className="guide-card">
+                <h3>
+                  🏗 Architecture
+                </h3>
 
-              <h3>
-                ⭐ Advanced Features
-              </h3>
+                <p>
+                  {guide.architecture ||
+                    "No architecture available."}
+                </p>
 
-              <ul>
-                {renderList(
-                  guide.advanced_features
+              </div>
+
+              {/* =================================================
+                  FOLDER STRUCTURE
+              ================================================= */}
+
+              <div
+                className=
+                  "guide-card full-width"
+              >
+
+                <h3>
+                  📂 Folder Structure
+                </h3>
+
+                <pre>
+                  {renderFolderStructure(
+                    guide.folder_structure
+                  )}
+                </pre>
+
+              </div>
+
+              {/* =================================================
+                  DATABASE
+              ================================================= */}
+
+              <div
+                className=
+                  "guide-card"
+              >
+
+                <h3>
+                  🗄 Database Design
+                </h3>
+
+                {renderDatabase(
+                  guide.database
                 )}
-              </ul>
 
-            </div>
+              </div>
 
+              {/* =================================================
+                  API
+              ================================================= */}
 
-            <div className="guide-card">
+              <div
+                className=
+                  "guide-card"
+              >
 
-              <h3>
-                📚 Resources
-              </h3>
+                <h3>
+                  🔗 API Endpoints
+                </h3>
 
-              <ul>
-                {renderList(
-                  guide.resources
+                <ul>
+                  {renderList(
+                    guide.apis
+                  )}
+                </ul>
+
+              </div>
+
+              {/* =================================================
+                  DEVELOPMENT STEPS
+              ================================================= */}
+
+              <div
+                className=
+                  "guide-card full-width"
+              >
+
+                <h3>
+                  🚀 Development Steps
+                </h3>
+
+                {Array.isArray(
+                  guide.steps
+                ) &&
+                guide.steps.length >
+                  0 ? (
+
+                  guide.steps.map(
+                    (
+                      step,
+                      index
+                    ) => (
+
+                      <div
+                        key={index}
+                        className=
+                          "step-item"
+                      >
+
+                        <span
+                          className=
+                            "step-number"
+                        >
+                          {index + 1}
+                        </span>
+
+                        <span>
+
+                          {typeof step ===
+                          "string"
+                            ? step
+                            : JSON.stringify(
+                                step
+                              )}
+
+                        </span>
+
+                      </div>
+
+                    )
+                  )
+
+                ) : (
+
+                  <p>
+                    No development steps
+                    available.
+                  </p>
+
                 )}
-              </ul>
+
+              </div>
+
+              {/* =================================================
+                  ADVANCED FEATURES
+              ================================================= */}
+
+              <div
+                className=
+                  "guide-card"
+              >
+
+                <h3>
+                  ⭐ Advanced Features
+                </h3>
+
+                <ul>
+
+                  {renderList(
+                    guide.advanced_features
+                  )}
+
+                </ul>
+
+              </div>
+
+              {/* =================================================
+                  RESOURCES
+              ================================================= */}
+
+              <div
+                className=
+                  "guide-card"
+              >
+
+                <h3>
+                  📚 Resources
+                </h3>
+
+                <ul>
+
+                  {renderList(
+                    guide.resources
+                  )}
+
+                </ul>
+
+              </div>
 
             </div>
 
-          </div>
+          </>
 
-        </>
-
-      )}
+        )}
 
     </div>
-
   );
-
 }
+
 export default ProjectGuide;

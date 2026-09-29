@@ -322,132 +322,136 @@ def normalize_project(project):
 # ============================================================
 
 def fallback_projects(skills):
+    """
+    Skill-aware offline project fallback.
+    No project uses technologies that are absent from the candidate skill list.
+    """
+    skills = [str(s).strip() for s in (skills or []) if str(s).strip()]
+    lower = {s.lower() for s in skills}
+    has = lambda *names: any(n.lower() in lower for n in names)
 
-    skills_text = ", ".join(skills)
+    projects = []
 
-    return [
+    if has("financial analysis", "finance", "excel", "advanced excel", "power bi", "sql"):
+        projects.extend([
+            {
+                "title": "Financial Performance Analytics Dashboard",
+                "difficulty": "Intermediate",
+                "tech_stack": ", ".join([s for s in skills if s.lower() in {"financial analysis","finance","excel","advanced excel","power bi","sql"}]) or "Financial Analysis, Excel, Power BI",
+                "architecture": "Analytics Dashboard",
+                "features": ["Revenue and expense analysis", "KPI tracking", "Trend analysis", "Interactive reporting", "Management insights"]
+            },
+            {
+                "title": "Personal Finance & Budget Analysis",
+                "difficulty": "Beginner",
+                "tech_stack": ", ".join([s for s in skills if s.lower() in {"finance","financial analysis","excel","advanced excel"}]) or "Finance, Excel",
+                "architecture": "Data Analysis Workflow",
+                "features": ["Income tracking", "Expense categorization", "Budget variance analysis", "Monthly summaries", "Financial insights"]
+            },
+        ])
 
-        {
-            "title": "AI Resume Analyzer",
-            "difficulty": "Advanced",
-            "tech_stack": "Python, FastAPI, React, SQL, Groq AI",
-            "architecture": "Client-Server Architecture",
-            "features": [
-                "Resume upload",
-                "ATS score analysis",
-                "Skill extraction",
-                "AI interview questions",
-                "Job recommendations",
-                "AI resume improvement"
-            ]
-        },
+    if has("marketing management", "marketing", "digital marketing", "market research", "market analysis"):
+        projects.extend([
+            {
+                "title": "Customer & Market Research Analytics",
+                "difficulty": "Intermediate",
+                "tech_stack": ", ".join([s for s in skills if s.lower() in {"market research","market analysis","data analysis","excel","power bi","marketing management"}]) or "Market Research, Data Analysis, Excel",
+                "architecture": "Research and Analytics Workflow",
+                "features": ["Customer segmentation", "Survey analysis", "Preference trends", "Market comparison", "Recommendation reporting"]
+            },
+            {
+                "title": "Marketing Campaign Performance Tracker",
+                "difficulty": "Intermediate",
+                "tech_stack": ", ".join([s for s in skills if s.lower() in {"marketing","digital marketing","excel","power bi","data analysis"}]) or "Marketing, Excel, Data Analysis",
+                "architecture": "Analytics Dashboard",
+                "features": ["Campaign tracking", "Conversion analysis", "Channel comparison", "KPI reporting", "Performance trends"]
+            },
+        ])
 
-        {
-            "title": "Employee Management System",
+    if has("business management", "business strategy", "business analytics", "project management", "crm"):
+        projects.extend([
+            {
+                "title": "Business KPI & Decision Support Dashboard",
+                "difficulty": "Advanced",
+                "tech_stack": ", ".join([s for s in skills if s.lower() in {"business analytics","business strategy","business management","power bi","excel","sql","data analysis"}]) or "Business Analytics, Excel, Power BI",
+                "architecture": "Business Intelligence Dashboard",
+                "features": ["KPI monitoring", "Goal tracking", "Trend analysis", "Decision support", "Management reporting"]
+            },
+            {
+                "title": "CRM Customer Relationship Analytics",
+                "difficulty": "Intermediate",
+                "tech_stack": ", ".join([s for s in skills if s.lower() in {"crm","customer research","data analysis","excel","power bi"}]) or "CRM, Data Analysis, Excel",
+                "architecture": "Customer Analytics Workflow",
+                "features": ["Customer segmentation", "Interaction tracking", "Retention analysis", "Customer insights", "Performance reporting"]
+            },
+        ])
+
+    if has("sales", "sales analysis", "sales reporting", "sales & business development", "business development"):
+        projects.append({
+            "title": "Sales Performance & Lead Analytics",
             "difficulty": "Intermediate",
-            "tech_stack": "Python, FastAPI, React, MySQL",
-            "architecture": "MVC / REST API",
-            "features": [
-                "Employee authentication",
-                "Employee CRUD",
-                "Department management",
-                "Attendance tracking",
-                "Salary management",
-                "Reports"
-            ]
-        },
+            "tech_stack": ", ".join([s for s in skills if s.lower() in {"sales","sales analysis","sales reporting","business development","lead generation","excel","power bi","sql"}]) or "Sales Analysis, Excel, Power BI",
+            "architecture": "Sales Analytics Dashboard",
+            "features": ["Lead tracking", "Sales funnel analysis", "Representative performance", "Monthly reporting", "Conversion trends"]
+        })
 
-        {
-            "title": "Online Learning Management System",
-            "difficulty": "Intermediate",
-            "tech_stack": "Python, Django, React, PostgreSQL",
-            "architecture": "Client-Server Architecture",
-            "features": [
-                "Student registration",
-                "Course management",
-                "Video lessons",
-                "Assignments",
-                "Progress tracking",
-                "Instructor dashboard"
-            ]
-        },
-
-        {
-            "title": "Smart Expense Tracker",
-            "difficulty": "Beginner",
-            "tech_stack": "Python, FastAPI, React, SQL",
-            "architecture": "REST API Architecture",
-            "features": [
-                "Expense management",
-                "Income tracking",
-                "Category management",
-                "Monthly reports",
-                "Budget alerts",
-                "Expense analytics"
-            ]
-        },
-
-        {
-            "title": "Real-Time Chat Application",
+    if has("operations management", "operations"):
+        projects.append({
+            "title": "Operations Efficiency Analytics",
             "difficulty": "Advanced",
-            "tech_stack": "Python, FastAPI, React, WebSocket, PostgreSQL",
-            "architecture": "Real-Time Client-Server Architecture",
-            "features": [
-                "User authentication",
-                "Private messaging",
-                "Group conversations",
-                "Online status",
-                "Message history",
-                "Real-time notifications"
-            ]
-        },
+            "tech_stack": ", ".join([s for s in skills if s.lower() in {"operations management","operations","data analysis","excel","power bi"}]) or "Operations Management, Data Analysis, Excel",
+            "architecture": "Operations Analytics Workflow",
+            "features": ["Process KPI tracking", "Bottleneck analysis", "Efficiency trends", "Resource reporting", "Improvement recommendations"]
+        })
 
-        {
-            "title": "E-Commerce Management Platform",
-            "difficulty": "Advanced",
-            "tech_stack": "Python, FastAPI, React, MySQL",
-            "architecture": "REST API / Layered Architecture",
-            "features": [
-                "Product catalog",
-                "Shopping cart",
-                "Order management",
-                "Payment integration",
-                "Inventory tracking",
-                "Admin dashboard"
-            ]
-        },
+    # Technical project fallbacks preserve the original feature for technical resumes.
+    if has("python", "flask", "django", "fastapi", "react", "javascript", "java", "sql"):
+        projects.extend([
+            {
+                "title": "Skill-Based Career Analytics Platform",
+                "difficulty": "Advanced",
+                "tech_stack": ", ".join(skills),
+                "architecture": "Client-Server Architecture",
+                "features": ["Skill profiling", "Analytics", "Recommendation workflow", "Search and filtering", "Reporting"]
+            },
+            {
+                "title": "Resume & Job Match Analytics",
+                "difficulty": "Advanced",
+                "tech_stack": ", ".join(skills),
+                "architecture": "Full-Stack Analytics Architecture",
+                "features": ["Resume analysis", "Skill matching", "Job search", "Match reporting", "Dashboard"]
+            },
+        ])
 
-        {
-            "title": "AI Customer Support Assistant",
-            "difficulty": "Advanced",
-            "tech_stack": "Python, FastAPI, React, Groq AI, SQL",
-            "architecture": "AI-Powered Client-Server Architecture",
-            "features": [
-                "AI chatbot",
-                "Customer authentication",
-                "Ticket creation",
-                "Automatic responses",
-                "Conversation history",
-                "Admin analytics"
-            ]
-        },
+    # Generic but still current-skill-only fallback.
+    if not projects and skills:
+        projects = [
+            {
+                "title": f"{skills[0]} Practical Analytics Project",
+                "difficulty": "Beginner",
+                "tech_stack": ", ".join(skills),
+                "architecture": "Skill-Based Workflow",
+                "features": [
+                    f"Practical use of {skills[0]}",
+                    "Data/input collection",
+                    "Analysis or processing",
+                    "Results reporting",
+                    "Performance tracking"
+                ]
+            }
+        ]
 
-        {
-            "title": "Job Application Tracking System",
-            "difficulty": "Intermediate",
-            "tech_stack": "Python, FastAPI, React, PostgreSQL",
-            "architecture": "MVC / REST API",
-            "features": [
-                "Job application tracking",
-                "Company management",
-                "Application status",
-                "Interview scheduling",
-                "Resume management",
-                "Application analytics"
-            ]
-        }
+    # Guarantee 8 cards without inventing technologies.
+    base = list(projects)
+    index = 1
+    while len(projects) < 8 and base:
+        source = base[(len(projects) - len(base)) % len(base)]
+        clone = dict(source)
+        clone["title"] = f"{source['title']} – Use Case {index}"
+        projects.append(clone)
+        index += 1
 
-    ]
+    return projects[:8]
 
 
 # ============================================================
@@ -455,212 +459,110 @@ def fallback_projects(skills):
 # ============================================================
 
 def generate_projects(skills):
-
-    # --------------------------------------------------------
-    # Normalize skills
-    # --------------------------------------------------------
-
+    skills = [str(s).strip() for s in (skills or []) if str(s).strip()]
     if not skills:
-
-        skills = [
-            "Python",
-            "Java",
-            "SQL"
-        ]
-
-    if isinstance(skills, str):
-
-        skills = [
-            skills
-        ]
-
-    skills = [
-        str(skill).strip()
-        for skill in skills
-        if str(skill).strip()
-    ]
+        return []
 
     skills_text = ", ".join(skills)
 
-    # --------------------------------------------------------
-    # AI PROMPT
-    # --------------------------------------------------------
-
     prompt = f"""
-You are an expert software architect and career mentor.
+You are an expert project recommender.
 
-Generate EXACTLY 8 UNIQUE software projects for a B.Tech
-computer science graduate.
+Generate EXACTLY 8 different project ideas for the candidate.
 
-Candidate skills:
-
+CURRENT RESUME SKILLS:
 {skills_text}
 
-IMPORTANT RULES:
+Rules:
+1. Every project must directly use one or more current skills.
+2. Do not introduce a technology that is not listed.
+3. Do not use Python, Java, SQL, React, FastAPI or other technologies
+   unless they appear in the current skill list.
+4. For business/finance/marketing resumes, generate business analytics,
+   finance, marketing, operations, CRM or reporting projects as relevant.
+5. For technical resumes, generate technical software projects as relevant.
+6. Projects must solve different real-world problems.
+7. Include Beginner, Intermediate and Advanced difficulty where appropriate.
+8. Return ONLY valid JSON.
+9. Exactly 8 objects.
 
-1. Generate exactly 8 projects.
-2. Every project must have a DIFFERENT title.
-3. Do not repeat project ideas.
-4. Do not generate eight variations of the same application.
-5. Use the candidate's skills where appropriate.
-6. Do not force every skill into every project.
-7. Each project must solve a different real-world problem.
-8. Projects should be realistic enough to implement.
-9. Projects should be useful for a software developer resume.
-10. Include Beginner, Intermediate and Advanced projects.
-11. Do not return explanations outside JSON.
-12. Return ONLY valid JSON.
-13. The response MUST start with [ and end with ].
-
-Use this exact structure:
-
+Format:
 [
   {{
-    "title": "Unique Project Name",
+    "title": "Project title",
     "difficulty": "Beginner",
-    "tech_stack": "Python, FastAPI, React, MySQL",
-    "architecture": "Client-Server Architecture",
-    "features": [
-      "Feature 1",
-      "Feature 2",
-      "Feature 3",
-      "Feature 4",
-      "Feature 5"
-    ]
+    "tech_stack": "Only current skills used by the project",
+    "architecture": "Relevant architecture/workflow",
+    "features": ["Feature 1", "Feature 2", "Feature 3", "Feature 4", "Feature 5"]
   }}
 ]
-
-Difficulty must be one of:
-
-Beginner
-Intermediate
-Advanced
 """
 
     try:
-
-        print("\n====================================")
-        print("GENERATING PROJECTS")
-        print("Skills:", skills_text)
-        print("====================================")
-
         response = client.chat.completions.create(
-
             model=MODEL_NAME,
-
-            temperature=0.8,
-
+            temperature=0.6,
             max_tokens=3500,
-
             messages=[
                 {
                     "role": "system",
                     "content": (
-                        "You are an expert software architect. "
-                        "Return exactly 8 unique projects as valid JSON."
+                        "Return exactly 8 project recommendations based only "
+                        "on the supplied current-resume skills."
                     )
                 },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
+                {"role": "user", "content": prompt}
             ]
         )
 
-        text = response.choices[0].message.content
-
-        print("Groq response received.")
-
-        parsed = parse_json_safely(text)
-
-        # ----------------------------------------------------
-        # Validate array
-        # ----------------------------------------------------
-
+        parsed = parse_json_safely(response.choices[0].message.content or "")
         if not isinstance(parsed, list):
-
-            raise ValueError(
-                "Groq did not return a JSON array."
-            )
+            raise ValueError("Invalid project JSON")
 
         projects = []
-
-        seen_titles = set()
+        seen = set()
 
         for item in parsed:
-
             project = normalize_project(item)
-
             if not project:
                 continue
 
-            title_key = (
-                project["title"]
-                .lower()
-                .strip()
-            )
-
-            if title_key in seen_titles:
+            title_key = project["title"].lower().strip()
+            if title_key in seen:
                 continue
 
-            seen_titles.add(title_key)
+            # Reject obvious technology leakage.
+            stack = str(project.get("tech_stack", "")).lower()
+            features = " ".join(project.get("features", [])).lower()
+            combined = stack + " " + features
 
-            projects.append(project)
-
-        # ----------------------------------------------------
-        # If AI generated less than 8,
-        # fill remaining projects from fallback.
-        # ----------------------------------------------------
-
-        if len(projects) < 8:
-
-            backup = fallback_projects(skills)
-
-            for project in backup:
-
-                title_key = (
-                    project["title"]
-                    .lower()
-                    .strip()
-                )
-
-                if title_key not in seen_titles:
-
-                    projects.append(project)
-
-                    seen_titles.add(title_key)
-
-                if len(projects) == 8:
+            allowed = {s.lower() for s in skills}
+            leaked = False
+            for forbidden in ["python", "java", "sql", "javascript", "react", "fastapi", "django", "flask"]:
+                if forbidden in combined and forbidden not in allowed:
+                    leaked = True
                     break
 
-        # ----------------------------------------------------
-        # FINAL GUARANTEE
-        # ----------------------------------------------------
+            if leaked:
+                continue
+
+            projects.append(project)
+            seen.add(title_key)
 
         if len(projects) < 8:
-
-            raise ValueError(
-                "Unable to create 8 unique projects."
-            )
-
-        print(
-            "Projects generated:",
-            len(projects)
-        )
+            backup = fallback_projects(skills)
+            for project in backup:
+                key = project["title"].lower().strip()
+                if key not in seen:
+                    projects.append(project)
+                    seen.add(key)
+                if len(projects) >= 8:
+                    break
 
         return projects[:8]
 
     except Exception as e:
-
-        print(
-            "PROJECT GENERATION ERROR:",
-            repr(e)
-        )
-
-        # IMPORTANT:
-        # Never return one project.
-        # Always return 8 projects.
-
+        print("PROJECT GENERATION ERROR:", repr(e))
         return fallback_projects(skills)[:8]
 
 
@@ -740,12 +642,15 @@ def normalize_guide(data, project_title):
 # PROJECT GUIDE
 # ============================================================
 
-def generate_project_guide(project_title):
+def generate_project_guide(project_title, skills=None):
 
     project_title = safe_string(
         project_title,
         "Software Project"
     )
+
+    skills = [str(s).strip() for s in (skills or []) if str(s).strip()]
+    skills_text = ", ".join(skills) if skills else "No resume skills supplied"
 
     prompt = f"""
 You are a senior software architect and technical mentor.
@@ -755,6 +660,12 @@ Create a COMPLETE and PROJECT-SPECIFIC development guide.
 REQUESTED PROJECT:
 
 {project_title}
+
+CURRENT RESUME SKILLS:
+
+{skills_text}
+
+If resume skills are supplied, use them when recommending the stack and implementation approach. Do not invent unlisted technologies when the project can be built using the supplied skills.
 
 VERY IMPORTANT:
 
@@ -1091,7 +1002,9 @@ Return exactly:
             ),
 
             "recommended_stack": (
-                "React.js, JavaScript, Python FastAPI, SQL"
+                skills_text
+                if skills_text != "No resume skills supplied"
+                else "Use the technologies required by the selected project."
             ),
 
             "architecture": (
@@ -1120,9 +1033,9 @@ Return exactly:
 """,
 
             "database": (
-                f"Create database entities that are directly "
-                f"related to {project_title}. Define primary keys, "
-                "foreign keys, relationships and indexes."
+                f"Create database entities directly related to {project_title}. "
+                f"Use the current resume skills where applicable: {skills_text}. "
+                "Define primary keys, foreign keys, relationships and indexes where a database is required."
             ),
 
             "apis": [

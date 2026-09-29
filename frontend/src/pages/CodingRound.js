@@ -1,5 +1,13 @@
-import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+  useRef
+} from "react";
+
+import {
+  useNavigate
+} from "react-router-dom";
+
 import ReactMarkdown from "react-markdown";
 
 import {
@@ -11,34 +19,174 @@ import {
 import "./CodingRound.css";
 
 function CodingRound({ result }) {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const [questions, setQuestions] = useState([]);
-  const [current, setCurrent] = useState(0);
+  // ==========================================================
+  // CURRENT RESUME SUPPORTED LANGUAGES
+  // ==========================================================
 
-  const [code, setCode] = useState("");
-  const [output, setOutput] = useState("");
+  const availableLanguages =
+    (() => {
 
-  const [evaluation, setEvaluation] =
-    useState(null);
+      const skills =
+        Array.isArray(
+          result?.skills
+        )
+          ? result.skills.map(
+              (skill) =>
+                String(
+                  skill
+                ).toLowerCase()
+            )
+          : [];
 
-  const [language, setLanguage] =
-    useState("python");
+      const mapping = [
+        [
+          "python",
+          "python"
+        ],
+        [
+          "java",
+          "java"
+        ],
+        [
+          "c++",
+          "cpp"
+        ],
+        [
+          "cpp",
+          "cpp"
+        ],
+        [
+          "c language",
+          "c"
+        ],
+        [
+          "javascript",
+          "javascript"
+        ],
+        [
+          "js",
+          "javascript"
+        ],
+        [
+          "sql",
+          "sql"
+        ]
+      ];
 
-  const [loading, setLoading] =
-    useState(false);
+      const output = [];
 
-  const [completed, setCompleted] =
-    useState(false);
+      mapping.forEach(
+        ([
+          skill,
+          language
+        ]) => {
+
+          if (
+            skills.some(
+              (item) =>
+                item === skill ||
+                item.includes(skill)
+            )
+          ) {
+
+            if (
+              !output.includes(
+                language
+              )
+            ) {
+              output.push(
+                language
+              );
+            }
+
+          }
+
+        }
+      );
+
+      return output;
+
+    })();
+
+  // ==========================================================
+  // STATE
+  // ==========================================================
+
+  const [
+    questions,
+    setQuestions
+  ] = useState([]);
+
+  const [
+    current,
+    setCurrent
+  ] = useState(0);
+
+  const [
+    code,
+    setCode
+  ] = useState("");
+
+  const [
+    output,
+    setOutput
+  ] = useState("");
+
+  const [
+    evaluation,
+    setEvaluation
+  ] = useState(null);
+
+  const [
+    language,
+    setLanguage
+  ] = useState(
+    availableLanguages[0] ||
+    ""
+  );
+
+  const [
+    loading,
+    setLoading
+  ] = useState(false);
+
+  const [
+    questionLoading,
+    setQuestionLoading
+  ] = useState(false);
+
+  const [
+    completed,
+    setCompleted
+  ] = useState(false);
 
   const countedQuestionRef =
     useRef(new Set());
 
   // ==========================================================
-  // USER-SPECIFIC STORAGE KEY
+  // RESET LANGUAGE WHEN RESUME CHANGES
+  // ==========================================================
+
+  useEffect(() => {
+
+    setLanguage(
+      availableLanguages[0] ||
+      ""
+    );
+
+  }, [
+    result?.resume_id
+  ]);
+
+  // ==========================================================
+  // USER KEY
   // ==========================================================
 
   const getUserKey = () => {
+
     const email =
       localStorage.getItem(
         "user_email"
@@ -52,70 +200,156 @@ function CodingRound({ result }) {
       );
   };
 
-  const getCodingScoreKey = () => {
-    return `codingCorrectAnswers_${getUserKey()}`;
-  };
+  const getCodingScoreKey =
+    () => {
+
+      return `codingCorrectAnswers_${getUserKey()}`;
+
+    };
 
   // ==========================================================
-  // LOAD QUESTIONS
+  // FETCH QUESTIONS WHEN NEW RESUME
   // ==========================================================
 
   useEffect(() => {
-    if (result) {
-      fetchQuestions();
-    }
-  }, [result]);
 
-  // ==========================================================
-  // FETCH QUESTIONS
-  // ==========================================================
-
-  const fetchQuestions = async () => {
-    try {
-      const res =
-        await getCodingQuestions({
-          resume_text:
-            result?.analysis || ""
-        });
-
-      const receivedQuestions =
-        res.data?.questions ||
-        res.questions ||
-        [];
-
-      setQuestions(
-        receivedQuestions
-      );
-
-      setCurrent(0);
-
-      setEvaluation(null);
-
-      setCode("");
-
-      setOutput("");
-
-      setCompleted(false);
-
-      countedQuestionRef.current =
-        new Set();
-
-    } catch (err) {
-      console.error(
-        "Error fetching coding questions:",
-        err
-      );
+    if (!result) {
 
       setQuestions([]);
+
+      return;
     }
-  };
+
+    fetchQuestions();
+
+  }, [
+    result?.resume_id
+  ]);
+
+  // ==========================================================
+  // FETCH CURRENT RESUME CODING QUESTIONS
+  // ==========================================================
+
+  const fetchQuestions =
+    async () => {
+
+      if (!result) {
+        return;
+      }
+
+      setQuestionLoading(
+        true
+      );
+
+      try {
+
+        const userSkills =
+          Array.isArray(
+            result.skills
+          )
+            ? [
+                ...result.skills
+              ]
+            : [];
+
+        console.log(
+          "CODING ROUND CURRENT RESUME:",
+          result.resume_id
+        );
+
+        console.log(
+          "CODING ROUND CURRENT SKILLS:",
+          userSkills
+        );
+
+        /*
+         * Backend receives the
+         * CURRENT resume context.
+         */
+
+        const res =
+          await getCodingQuestions({
+            skills:
+              userSkills,
+
+            resume_text:
+              result.resume_text ||
+              "",
+
+            resume_id:
+              result.resume_id ||
+              "",
+
+            roles:
+              Array.isArray(
+                result.roles
+              )
+                ? result.roles
+                : []
+          });
+
+        console.log(
+          "CODING QUESTIONS RESPONSE:",
+          res.data || res
+        );
+
+        const receivedQuestions =
+          res.data?.questions ||
+          res.questions ||
+          [];
+
+        setQuestions(
+          Array.isArray(
+            receivedQuestions
+          )
+            ? receivedQuestions
+            : []
+        );
+
+        setCurrent(0);
+
+        setEvaluation(null);
+
+        setCode("");
+
+        setOutput("");
+
+        setCompleted(false);
+
+        countedQuestionRef.current =
+          new Set();
+
+      } catch (error) {
+
+        console.error(
+          "Error fetching coding questions:",
+          error
+        );
+
+        console.error(
+          "Coding questions backend response:",
+          error.response?.data
+        );
+
+        setQuestions([]);
+
+      } finally {
+
+        setQuestionLoading(
+          false
+        );
+
+      }
+    };
 
   // ==========================================================
   // RUN CODE
   // ==========================================================
 
   const runCode = async () => {
+
     if (!code.trim()) {
+
       setOutput(
         "⚠ Please write code first."
       );
@@ -123,7 +357,17 @@ function CodingRound({ result }) {
       return;
     }
 
+    if (!language) {
+
+      setOutput(
+        "No supported programming language was found in the current resume."
+      );
+
+      return;
+    }
+
     try {
+
       const res =
         await runCoding({
           language,
@@ -136,329 +380,372 @@ function CodingRound({ result }) {
         "No output returned."
       );
 
-    } catch (err) {
+    } catch (error) {
+
       console.error(
         "Run code error:",
-        err
+        error
       );
 
       setOutput(
-        err.response?.data?.detail ||
+        error.response?.data
+          ?.detail ||
+        error.response?.data
+          ?.message ||
         "❌ Error running code."
       );
     }
   };
 
   // ==========================================================
-  // SAVE CODING CORRECT ANSWER
+  // SAVE CORRECT ANSWER
   // ==========================================================
 
-  const saveCodingCorrectAnswer = () => {
-    const key =
-      getCodingScoreKey();
+  const saveCodingCorrectAnswer =
+    () => {
 
-    const currentCount =
-      Number(
-        localStorage.getItem(
-          key
-        ) || 0
+      const key =
+        getCodingScoreKey();
+
+      const currentCount =
+        Number(
+          localStorage.getItem(
+            key
+          ) || 0
+        );
+
+      const newCount =
+        currentCount + 1;
+
+      localStorage.setItem(
+        key,
+        String(
+          newCount
+        )
       );
 
-    localStorage.setItem(
-      key,
-      String(
-        currentCount + 1
-      )
-    );
+      /*
+       * Existing dashboard
+       * compatibility.
+       */
 
-    // Compatibility with old dashboard key
-    localStorage.setItem(
-      "codingCorrectAnswers",
-      String(
-        currentCount + 1
-      )
-    );
-
-    window.dispatchEvent(
-      new Event(
-        "dashboardStatsUpdated"
-      )
-    );
-  };
-
-  // ==========================================================
-  // SUBMIT ANSWER
-  // ==========================================================
-
-  const submitAnswer = async () => {
-    if (!code.trim()) {
-      setOutput(
-        "⚠ Please write your solution first."
+      localStorage.setItem(
+        "codingCorrectAnswers",
+        String(
+          newCount
+        )
       );
 
-      return;
-    }
+      window.dispatchEvent(
+        new Event(
+          "dashboardStatsUpdated"
+        )
+      );
+    };
 
-    if (!questions[current]) {
-      return;
-    }
+  // ==========================================================
+  // SUBMIT CODING ANSWER
+  // ==========================================================
 
-    if (loading) {
-      return;
-    }
+  const submitAnswer =
+    async () => {
 
-    setLoading(true);
+      if (!code.trim()) {
 
-    try {
-      const res =
-        await evaluateCoding({
-          question:
-            questions[current],
+        setOutput(
+          "⚠ Please write your solution first."
+        );
 
-          answer:
-            code,
+        return;
+      }
 
-          language
+      if (!questions[current]) {
+        return;
+      }
+
+      if (loading) {
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+
+        const res =
+          await evaluateCoding({
+
+            question:
+              questions[current],
+
+            answer:
+              code,
+
+            language,
+
+            skills:
+              Array.isArray(
+                result?.skills
+              )
+                ? result.skills
+                : [],
+
+            resume_text:
+              result?.resume_text ||
+              "",
+
+            resume_id:
+              result?.resume_id ||
+              "",
+
+            roles:
+              Array.isArray(
+                result?.roles
+              )
+                ? result.roles
+                : []
+
+          });
+
+        console.log(
+          "CODING EVALUATION RESPONSE:",
+          res.data || res
+        );
+
+        const rawData =
+          res.data ||
+          res ||
+          {};
+
+        const evaluationData =
+          rawData.evaluation ||
+          rawData.data ||
+          (
+            typeof rawData.result ===
+              "object" &&
+            rawData.result !== null
+              ? rawData.result
+              : rawData
+          );
+
+        const extractedScore =
+          evaluationData.score ??
+          evaluationData.overall_score ??
+          evaluationData.rating ??
+          evaluationData.final_score ??
+          rawData.score ??
+          rawData.overall_score ??
+          rawData.rating ??
+          rawData.final_score ??
+          0;
+
+        const score =
+          Number(
+            extractedScore
+          ) || 0;
+
+        const extractedFeedback =
+          evaluationData.feedback ??
+          evaluationData.feedback_text ??
+          evaluationData.detailed_feedback ??
+          evaluationData.comments ??
+          evaluationData.comment ??
+          evaluationData.explanation ??
+          evaluationData.message ??
+          rawData.feedback ??
+          rawData.feedback_text ??
+          rawData.detailed_feedback ??
+          rawData.comments ??
+          rawData.comment ??
+          rawData.explanation ??
+          rawData.message ??
+          (
+            typeof rawData.result ===
+              "string"
+              ? rawData.result
+              : ""
+          );
+
+        let feedbackText =
+          extractedFeedback;
+
+        if (
+          typeof feedbackText ===
+            "object" &&
+          feedbackText !== null
+        ) {
+
+          feedbackText =
+            JSON.stringify(
+              feedbackText,
+              null,
+              2
+            );
+        }
+
+        if (
+          !feedbackText ||
+          String(
+            feedbackText
+          ).trim() === ""
+        ) {
+
+          feedbackText =
+            "Evaluation completed, but no detailed feedback was returned by the backend.";
+        }
+
+        const normalizedEvaluation =
+          {
+
+            ...evaluationData,
+
+            score,
+
+            feedback:
+              String(
+                feedbackText
+              ),
+
+            correct:
+              evaluationData.correct ??
+              evaluationData.is_correct ??
+              rawData.correct ??
+              rawData.is_correct ??
+              false
+
+          };
+
+        setEvaluation(
+          normalizedEvaluation
+        );
+
+        const isCorrect =
+          normalizedEvaluation.correct ===
+            true ||
+          normalizedEvaluation.is_correct ===
+            true ||
+          String(
+            normalizedEvaluation.result ||
+            ""
+          ).toLowerCase() ===
+            "correct" ||
+          score >= 7;
+
+        if (
+          isCorrect &&
+          !countedQuestionRef.current.has(
+            current
+          )
+        ) {
+
+          saveCodingCorrectAnswer();
+
+          countedQuestionRef.current.add(
+            current
+          );
+        }
+
+        if (
+          current >=
+          questions.length - 1
+        ) {
+
+          setTimeout(() => {
+            setCompleted(
+              true
+            );
+          }, 1200);
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Coding evaluation error:",
+          error
+        );
+
+        console.error(
+          "Coding backend response:",
+          error.response?.data
+        );
+
+        setEvaluation({
+
+          score: 0,
+
+          feedback:
+            error.response?.data
+              ?.detail ||
+            error.response?.data
+              ?.message ||
+            "❌ Evaluation failed. Please check your backend connection.",
+
+          correct:
+            false
+
         });
 
-      console.log(
-        "CODING EVALUATION RESPONSE:",
-        res.data || res
-      );
+      } finally {
 
-      // ======================================================
-      // RAW RESPONSE
-      // ======================================================
-
-      const rawData =
-        res.data || res || {};
-
-      // ======================================================
-      // HANDLE DIFFERENT RESPONSE STRUCTURES
-      // ======================================================
-
-      const evaluationData =
-        rawData.evaluation ||
-        rawData.data ||
-        (
-          typeof rawData.result === "object" &&
-          rawData.result !== null
-            ? rawData.result
-            : rawData
-        );
-
-      // ======================================================
-      // EXTRACT SCORE
-      // ======================================================
-
-      const extractedScore =
-        evaluationData.score ??
-        evaluationData.overall_score ??
-        evaluationData.rating ??
-        evaluationData.final_score ??
-        rawData.score ??
-        rawData.overall_score ??
-        rawData.rating ??
-        rawData.final_score ??
-        0;
-
-      const score =
-        Number(extractedScore) || 0;
-
-      // ======================================================
-      // EXTRACT FEEDBACK
-      // ======================================================
-
-      const extractedFeedback =
-        evaluationData.feedback ??
-        evaluationData.feedback_text ??
-        evaluationData.detailed_feedback ??
-        evaluationData.comments ??
-        evaluationData.comment ??
-        evaluationData.explanation ??
-        evaluationData.message ??
-        rawData.feedback ??
-        rawData.feedback_text ??
-        rawData.detailed_feedback ??
-        rawData.comments ??
-        rawData.comment ??
-        rawData.explanation ??
-        rawData.message ??
-        (
-          typeof rawData.result === "string"
-            ? rawData.result
-            : ""
-        );
-
-      // ======================================================
-      // CONVERT OBJECT TO STRING
-      // ======================================================
-
-      let feedbackText =
-        extractedFeedback;
-
-      if (
-        typeof feedbackText === "object" &&
-        feedbackText !== null
-      ) {
-        feedbackText =
-          JSON.stringify(
-            feedbackText,
-            null,
-            2
-          );
-      }
-
-      if (
-        !feedbackText ||
-        String(feedbackText).trim() === ""
-      ) {
-        feedbackText =
-          "Evaluation completed, but no detailed feedback was returned by the backend.";
-      }
-
-      // ======================================================
-      // NORMALIZED RESPONSE
-      // ======================================================
-
-      const normalizedEvaluation = {
-        ...evaluationData,
-
-        score,
-
-        feedback:
-          String(feedbackText),
-
-        correct:
-          evaluationData.correct ??
-          evaluationData.is_correct ??
-          rawData.correct ??
-          rawData.is_correct ??
+        setLoading(
           false
-      };
-
-      console.log(
-        "NORMALIZED CODING EVALUATION:",
-        normalizedEvaluation
-      );
-
-      setEvaluation(
-        normalizedEvaluation
-      );
-
-      // ======================================================
-      // DETERMINE CORRECT ANSWER
-      // ======================================================
-
-      const isCorrect =
-        normalizedEvaluation.correct === true ||
-        normalizedEvaluation.is_correct === true ||
-        String(
-          normalizedEvaluation.result || ""
-        )
-          .toLowerCase() ===
-          "correct" ||
-        score >= 7;
-
-      // ======================================================
-      // COUNT ONLY ONCE
-      // ======================================================
-
-      if (
-        isCorrect &&
-        !countedQuestionRef.current.has(
-          current
-        )
-      ) {
-        saveCodingCorrectAnswer();
-
-        countedQuestionRef.current.add(
-          current
         );
+
       }
-
-      // ======================================================
-      // FINAL QUESTION
-      // ======================================================
-
-      if (
-        current >=
-        questions.length - 1
-      ) {
-        setTimeout(() => {
-          setCompleted(true);
-        }, 1200);
-      }
-
-    } catch (err) {
-      console.error(
-        "Evaluation error:",
-        err
-      );
-
-      console.error(
-        "Coding backend response:",
-        err.response?.data
-      );
-
-      setEvaluation({
-        score: 0,
-
-        feedback:
-          err.response?.data?.detail ||
-          err.response?.data?.message ||
-          "❌ Evaluation failed. Please check your backend connection.",
-
-        correct:
-          false
-      });
-
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   // ==========================================================
   // NEXT QUESTION
   // ==========================================================
 
-  const nextQuestion = () => {
-    if (
-      current <
-      questions.length - 1
-    ) {
-      setCurrent(
-        (prev) =>
-          prev + 1
-      );
+  const nextQuestion =
+    () => {
 
-      setCode("");
+      if (
+        current <
+        questions.length - 1
+      ) {
 
-      setOutput("");
+        setCurrent(
+          (previous) =>
+            previous + 1
+        );
 
-      setEvaluation(null);
-    }
-  };
+        setCode("");
+
+        setOutput("");
+
+        setEvaluation(
+          null
+        );
+      }
+    };
 
   // ==========================================================
-  // FINISH CODING ROUND
+  // FINISH
   // ==========================================================
 
-  const finishCodingRound = () => {
-    navigate("/");
-  };
+  const finishCodingRound =
+    () => {
+
+      navigate("/");
+    };
 
   // ==========================================================
   // NO RESUME
   // ==========================================================
 
   if (!result) {
+
     return (
       <div className="coding-page">
 
         <div className="coding-empty-card">
 
-          <div className="coding-empty-icon">
+          <div
+            className=
+              "coding-empty-icon"
+          >
             💻
           </div>
 
@@ -467,13 +754,16 @@ function CodingRound({ result }) {
           </h2>
 
           <p>
-            Analyze your resume from the
-            dashboard to start the AI Coding Round.
+            Analyze your resume from
+            the dashboard to start
+            the AI Coding Round.
           </p>
 
           <button
             onClick={() =>
-              navigate("/resume")
+              navigate(
+                "/resume"
+              )
             }
           >
             Upload Resume
@@ -486,10 +776,11 @@ function CodingRound({ result }) {
   }
 
   // ==========================================================
-  // COMPLETED SCREEN
+  // COMPLETED
   // ==========================================================
 
   if (completed) {
+
     const correctCount =
       Array.from(
         countedQuestionRef.current
@@ -498,9 +789,15 @@ function CodingRound({ result }) {
     return (
       <div className="coding-page">
 
-        <div className="coding-complete-card">
+        <div
+          className=
+            "coding-complete-card"
+        >
 
-          <div className="complete-icon">
+          <div
+            className=
+              "complete-icon"
+          >
             🎉
           </div>
 
@@ -514,13 +811,17 @@ function CodingRound({ result }) {
             questions.
           </p>
 
-          <div className="coding-final-stat">
+          <div
+            className=
+              "coding-final-stat"
+          >
 
             <span>
               Correct Problems
             </span>
 
             <strong>
+
               {correctCount}
 
               <small>
@@ -532,12 +833,98 @@ function CodingRound({ result }) {
           </div>
 
           <button
-            className="dashboard-return-btn"
+            className=
+              "dashboard-return-btn"
             onClick={
               finishCodingRound
             }
           >
             ← Back to Dashboard
+          </button>
+
+        </div>
+
+      </div>
+    );
+  }
+
+  // ==========================================================
+  // LOADING QUESTIONS
+  // ==========================================================
+
+  if (questionLoading) {
+
+    return (
+      <div className="coding-page">
+
+        <div
+          className=
+            "coding-empty-card"
+        >
+
+          <div
+            className=
+              "coding-empty-icon"
+          >
+            🤖
+          </div>
+
+          <h2>
+            Preparing Coding Round
+          </h2>
+
+          <p>
+            Generating coding questions
+            from your current resume
+            skills...
+          </p>
+
+        </div>
+
+      </div>
+    );
+  }
+
+  // ==========================================================
+  // NO QUESTIONS
+  // ==========================================================
+
+  if (
+    !questionLoading &&
+    questions.length === 0
+  ) {
+
+    return (
+      <div className="coding-page">
+
+        <div
+          className=
+            "coding-empty-card"
+        >
+
+          <div
+            className=
+              "coding-empty-icon"
+          >
+            💻
+          </div>
+
+          <h2>
+            No Coding Questions
+          </h2>
+
+          <p>
+            No coding questions were
+            generated for the current
+            resume skills.
+          </p>
+
+          <button
+            onClick={
+              fetchQuestions
+            }
+          >
+            Try Again
           </button>
 
         </div>
@@ -553,13 +940,22 @@ function CodingRound({ result }) {
   return (
     <div className="coding-page">
 
-      <div className="coding-container">
+      <div
+        className=
+          "coding-container"
+      >
 
         {/* HEADER */}
 
-        <div className="coding-header">
+        <div
+          className=
+            "coding-header"
+        >
 
-          <div className="coding-badge">
+          <div
+            className=
+              "coding-badge"
+          >
             AI POWERED
           </div>
 
@@ -572,13 +968,68 @@ function CodingRound({ result }) {
             and receive AI evaluation.
           </p>
 
+          {/* CURRENT RESUME SKILLS */}
+
+          {Array.isArray(
+            result.skills
+          ) &&
+            result.skills.length >
+              0 && (
+
+              <div
+                style={{
+                  display:
+                    "flex",
+                  flexWrap:
+                    "wrap",
+                  gap:
+                    "8px",
+                  marginTop:
+                    "16px"
+                }}
+              >
+
+                {result.skills.map(
+                  (
+                    skill,
+                    index
+                  ) => (
+
+                    <span
+                      key={index}
+                      style={{
+                        padding:
+                          "5px 10px",
+                        borderRadius:
+                          "16px",
+                        background:
+                          "#eef7ef",
+                        color:
+                          "#218838",
+                        fontSize:
+                          "12px"
+                      }}
+                    >
+                      {skill}
+                    </span>
+
+                  )
+                )}
+
+              </div>
+
+            )}
+
         </div>
 
         {/* TOP BAR */}
 
         <div className="top-bar">
 
-          <div className="question-progress">
+          <div
+            className=
+              "question-progress"
+          >
 
             Question{" "}
 
@@ -594,46 +1045,76 @@ function CodingRound({ result }) {
 
           </div>
 
-          <select
-            value={language}
-            onChange={(e) =>
-              setLanguage(
-                e.target.value
-              )
-            }
-            className="language-select"
-          >
+          {availableLanguages.length >
+          0 ? (
 
-            <option value="python">
-              Python
-            </option>
+            <select
+              value={
+                language
+              }
+              onChange={(event) =>
+                setLanguage(
+                  event.target.value
+                )
+              }
+              className=
+                "language-select"
+            >
 
-            <option value="java">
-              Java
-            </option>
+              {availableLanguages.map(
+                (
+                  item
+                ) => (
 
-            <option value="c">
-              C
-            </option>
+                  <option
+                    key={item}
+                    value={item}
+                  >
 
-            <option value="cpp">
-              C++
-            </option>
+                    {item ===
+                    "cpp"
+                      ? "C++"
+                      : item
+                          .charAt(
+                            0
+                          )
+                          .toUpperCase() +
+                        item.slice(
+                          1
+                        )}
 
-            <option value="sql">
-              SQL
-            </option>
+                  </option>
 
-          </select>
+                )
+              )}
+
+            </select>
+
+          ) : (
+
+            <span
+              className=
+                "language-select"
+            >
+              No supported coding
+              language in current
+              resume
+            </span>
+
+          )}
 
         </div>
 
-        {/* PROGRESS BAR */}
+        {/* PROGRESS */}
 
-        <div className="coding-progress">
+        <div
+          className=
+            "coding-progress"
+        >
 
           <div
-            className="coding-progress-fill"
+            className=
+              "coding-progress-fill"
             style={{
               width:
                 questions.length
@@ -650,28 +1131,40 @@ function CodingRound({ result }) {
 
         {/* QUESTION */}
 
-        {questions.length > 0 && (
-          <div className="question-card">
+        <div
+          className=
+            "question-card"
+        >
 
-            <div className="question-label">
-              CODING QUESTION
-            </div>
-
-            <h2>
-              {questions[current]}
-            </h2>
-
+          <div
+            className=
+              "question-label"
+          >
+            CODING QUESTION
           </div>
-        )}
+
+          <h2>
+            {questions[current]}
+          </h2>
+
+        </div>
 
         {/* EDITOR */}
 
-        <div className="editor-wrapper">
+        <div
+          className=
+            "editor-wrapper"
+        >
 
-          <div className="editor-top">
+          <div
+            className=
+              "editor-top"
+          >
 
             <span>
-              {language.toUpperCase()}
+              {language
+                ? language.toUpperCase()
+                : "CODE"}
             </span>
 
             <span>
@@ -682,42 +1175,59 @@ function CodingRound({ result }) {
 
           <textarea
             value={code}
-            onChange={(e) =>
+            onChange={(event) =>
               setCode(
-                e.target.value
+                event.target.value
               )
             }
             placeholder={
-              `Write your ${language} solution here...`
+              language
+                ? `Write your ${language} solution here...`
+                : "Write your solution here..."
             }
-            className="code-editor"
+            className=
+              "code-editor"
             spellCheck="false"
           />
 
         </div>
 
-        {/* ACTION BUTTONS */}
+        {/* ACTIONS */}
 
-        <div className="action-buttons">
+        <div
+          className=
+            "action-buttons"
+        >
 
           <button
-            className="run-btn"
-            onClick={runCode}
-            disabled={loading}
+            className=
+              "run-btn"
+            onClick={
+              runCode
+            }
+            disabled={
+              loading ||
+              !language
+            }
           >
             ▶ Run Code
           </button>
 
           <button
-            className="submit-btn"
+            className=
+              "submit-btn"
             onClick={
               submitAnswer
             }
-            disabled={loading}
+            disabled={
+              loading
+            }
           >
+
             {loading
               ? "AI Evaluating..."
               : "Submit Answer"}
+
           </button>
 
         </div>
@@ -725,9 +1235,16 @@ function CodingRound({ result }) {
         {/* OUTPUT */}
 
         {output && (
-          <div className="result-card">
 
-            <div className="result-title">
+          <div
+            className=
+              "result-card"
+          >
+
+            <div
+              className=
+                "result-title"
+            >
               Code Output
             </div>
 
@@ -736,18 +1253,29 @@ function CodingRound({ result }) {
             </pre>
 
           </div>
+
         )}
 
         {/* EVALUATION */}
 
         {evaluation && (
-          <div className="evaluation-card">
 
-            <div className="evaluation-title">
+          <div
+            className=
+              "evaluation-card"
+          >
+
+            <div
+              className=
+                "evaluation-title"
+            >
               AI Evaluation Report
             </div>
 
-            <div className="evaluation-content">
+            <div
+              className=
+                "evaluation-content"
+            >
 
               <ReactMarkdown>
                 {
@@ -759,17 +1287,23 @@ function CodingRound({ result }) {
             </div>
 
           </div>
+
         )}
 
-        {/* NEXT QUESTION */}
+        {/* NEXT */}
 
         {evaluation &&
           current <
             questions.length - 1 && (
-            <div className="next-wrapper">
+
+            <div
+              className=
+                "next-wrapper"
+            >
 
               <button
-                className="next-btn"
+                className=
+                  "next-btn"
                 onClick={
                   nextQuestion
                 }
@@ -778,22 +1312,28 @@ function CodingRound({ result }) {
               </button>
 
             </div>
+
           )}
 
-        {/* FINAL QUESTION MESSAGE */}
+        {/* FINISH */}
 
         {evaluation &&
           current ===
             questions.length - 1 && (
-            <div className="finish-wrapper">
+
+            <div
+              className=
+                "finish-wrapper"
+            >
 
               <p>
-                🎉 You completed the final
-                question.
+                🎉 You completed the
+                final question.
               </p>
 
               <button
-                className="finish-btn"
+                className=
+                  "finish-btn"
                 onClick={
                   finishCodingRound
                 }
@@ -802,6 +1342,7 @@ function CodingRound({ result }) {
               </button>
 
             </div>
+
           )}
 
       </div>

@@ -1,274 +1,449 @@
-import { useEffect, useState } from "react";
-import { filterJobs } from "../api";
+import {
+  useEffect,
+  useState
+} from "react";
+
+import {
+  filterJobs
+} from "../api";
+
 import "./JobRecommendations.css";
 
-function JobRecommendations({ result }) {
-  const [jobs, setJobs] = useState([]);
-  const [experience, setExperience] = useState("fresher");
-  const [loading, setLoading] = useState(false);
+function JobRecommendations({
+  result
+}) {
 
-  // =========================================
-  // LOAD DEFAULT JOBS FROM RESULT
-  // =========================================
+  const [
+    jobs,
+    setJobs
+  ] = useState([]);
+
+  const [
+    experience,
+    setExperience
+  ] = useState(
+    "fresher"
+  );
+
+  const [
+    loading,
+    setLoading
+  ] = useState(false);
+
+  /*
+   * =========================
+   * LOAD NEW RESUME JOBS
+   * =========================
+   */
 
   useEffect(() => {
-    if (result?.jobs) {
-      setJobs(result.jobs);
-    }
-  }, [result]);
 
-  // =========================================
-  // FETCH FILTERED JOBS
-  // =========================================
+    if (!result) {
+
+      setJobs([]);
+
+      return;
+    }
+
+    /*
+     * IMPORTANT:
+     * Old jobs are removed when
+     * resume_id changes.
+     */
+
+    setJobs(
+      Array.isArray(
+        result.jobs
+      )
+        ? [
+            ...result.jobs
+          ]
+        : []
+    );
+
+  }, [
+    result?.resume_id
+  ]);
+
+  /*
+   * =========================
+   * FETCH JOBS
+   * =========================
+   */
 
   const fetchFilteredJobs =
-    async (selectedExperience) => {
+    async (
+      selectedExperience
+    ) => {
 
       if (!result) {
         return;
       }
 
-      setLoading(true);
+      setLoading(
+        true
+      );
 
       try {
+
+        const currentSkills =
+          Array.isArray(
+            result.skills
+          )
+            ? result.skills
+            : [];
+
+        const currentRoles =
+          Array.isArray(
+            result.roles
+          )
+            ? result.roles
+            : [];
 
         const res =
           await filterJobs({
 
-            // Resume-derived roles
+            /*
+             * CURRENT RESUME ONLY
+             */
+
             roles:
-              result?.roles || [],
+              currentRoles,
 
-            // Resume-derived skills
             skills:
-              result?.skills || [],
+              currentSkills,
 
-            // Selected experience
+            resume_text:
+              result.resume_text ||
+              "",
+
+            resume_id:
+              result.resume_id ||
+              "",
+
             experience:
-              selectedExperience,
-
+              selectedExperience
           });
 
-        setJobs(
+        const newJobs =
           res?.data?.jobs ||
           res?.jobs ||
-          []
+          [];
+
+        /*
+         * Replace old jobs completely.
+         */
+
+        setJobs(
+          Array.isArray(
+            newJobs
+          )
+            ? newJobs
+            : []
         );
 
       } catch (error) {
 
         console.error(
           "JOB FILTER ERROR:",
-          error
+          error.response?.data ||
+            error
         );
 
         setJobs([]);
 
       } finally {
 
-        setLoading(false);
-
+        setLoading(
+          false
+        );
       }
-
     };
 
-  // =========================================
-  // EXPERIENCE CHANGE HANDLER
-  // =========================================
+  /*
+   * =========================
+   * EXPERIENCE
+   * =========================
+   */
 
-  const handleExperienceChange = async (e) => {
-    const value = e.target.value;
+  const handleExperienceChange =
+    async (
+      event
+    ) => {
 
-    setExperience(value);
+      const value =
+        event.target.value;
 
-    await fetchFilteredJobs(value);
-  };
-
-  // =========================================
-  // APPLY JOB
-  // =========================================
-  // Prevent duplicate job applications
-  // and update Jobs Applied Today
-  // =========================================
-
-  const handleApply = (job) => {
-    const existingJobs =
-      JSON.parse(
-        localStorage.getItem("jobsApplied") || "[]"
+      setExperience(
+        value
       );
 
-    const jobTitle = job.title || job.role;
-
-    const alreadyApplied = existingJobs.some(
-      (item) =>
-        item.title === jobTitle &&
-        item.company === job.company
-    );
-
-    // =========================================
-    // ONLY COUNT NEW APPLICATIONS
-    // =========================================
-
-    if (!alreadyApplied) {
-
-      // -----------------------------------------
-      // SAVE APPLICATION HISTORY
-      // -----------------------------------------
-
-      existingJobs.push({
-        title: jobTitle,
-        company: job.company,
-        appliedAt: new Date().toISOString(),
-      });
-
-      localStorage.setItem(
-        "jobsApplied",
-        JSON.stringify(existingJobs)
+      await fetchFilteredJobs(
+        value
       );
+    };
 
-      // =========================================
-      // JOBS APPLIED TODAY
-      // =========================================
+  /*
+   * =========================
+   * APPLY
+   * =========================
+   */
 
-      const today =
-        new Date().toISOString().split("T")[0];
+  const handleApply =
+    (job) => {
 
-      const savedDate =
-        localStorage.getItem("jobsAppliedDate");
-
-      let jobsApplied =
-        Number(
+      const existingJobs =
+        JSON.parse(
           localStorage.getItem(
-            "jobsAppliedToday"
-          ) || 0
+            "jobsApplied"
+          ) || "[]"
         );
 
-      // -----------------------------------------
-      // RESET COUNT WHEN A NEW DAY STARTS
-      // -----------------------------------------
+      const jobTitle =
+        job.title ||
+        job.role ||
+        "Job";
 
-      if (savedDate !== today) {
-        jobsApplied = 0;
+      const alreadyApplied =
+        existingJobs.some(
+          (item) =>
+            item.title ===
+              jobTitle &&
+            item.company ===
+              job.company
+        );
+
+      if (!alreadyApplied) {
+
+        existingJobs.push({
+
+          title:
+            jobTitle,
+
+          company:
+            job.company,
+
+          appliedAt:
+            new Date()
+              .toISOString()
+        });
+
+        localStorage.setItem(
+          "jobsApplied",
+          JSON.stringify(
+            existingJobs
+          )
+        );
+
+        const today =
+          new Date()
+            .toISOString()
+            .split("T")[0];
+
+        const savedDate =
+          localStorage.getItem(
+            "jobsAppliedDate"
+          );
+
+        let jobsApplied =
+          Number(
+            localStorage.getItem(
+              "jobsAppliedToday"
+            ) || 0
+          );
+
+        if (
+          savedDate !==
+          today
+        ) {
+          jobsApplied = 0;
+        }
+
+        jobsApplied +=
+          1;
+
+        localStorage.setItem(
+          "jobsAppliedToday",
+          String(
+            jobsApplied
+          )
+        );
+
+        localStorage.setItem(
+          "jobsAppliedDate",
+          today
+        );
+
+        window.dispatchEvent(
+          new Event(
+            "dashboardStatsUpdated"
+          )
+        );
       }
 
-      // -----------------------------------------
-      // INCREASE TODAY'S COUNT
-      // -----------------------------------------
+      const applyUrl =
+        job.link ||
+        job.apply_link;
 
-      jobsApplied += 1;
+      if (applyUrl) {
 
-      // -----------------------------------------
-      // SAVE TODAY'S COUNT
-      // -----------------------------------------
+        window.open(
+          applyUrl,
+          "_blank",
+          "noopener,noreferrer"
+        );
 
-      localStorage.setItem(
-        "jobsAppliedToday",
-        jobsApplied
-      );
+      } else {
 
-      localStorage.setItem(
-        "jobsAppliedDate",
-        today
-      );
+        alert(
+          "Application link is not available."
+        );
+      }
+    };
 
-      // =========================================
-      // UPDATE DASHBOARD IMMEDIATELY
-      // =========================================
-
-      window.dispatchEvent(
-        new Event("dashboardStatsUpdated")
-      );
-    }
-
-    // =========================================
-    // OPEN APPLICATION LINK
-    // =========================================
-
-    const applyUrl =
-      job.link || job.apply_link;
-
-    if (applyUrl) {
-
-      window.open(
-        applyUrl,
-        "_blank",
-        "noopener,noreferrer"
-      );
-
-    } else {
-
-      alert(
-        "Application link is not available."
-      );
-
-    }
-  };
-
-  // =========================================
-  // EMPTY STATE
-  // =========================================
+  /*
+   * =========================
+   * NO RESUME
+   * =========================
+   */
 
   if (!result) {
 
     return (
 
-      <div className="jobs-wrapper">
+      <div
+        className=
+          "jobs-wrapper"
+      >
 
-        <div className="empty-state">
+        <div
+          className=
+            "empty-state"
+        >
 
           <h2>
             Upload your resume first
           </h2>
 
           <p>
-            Go to Home page and analyze your resume
+            Go to Home page and
+            analyze your resume
           </p>
 
         </div>
 
       </div>
-
     );
-
   }
 
-  // =========================================
-  // MAIN PAGE
-  // =========================================
+  const skills =
+    Array.isArray(
+      result.skills
+    )
+      ? result.skills
+      : [];
+
+  const roles =
+    Array.isArray(
+      result.roles
+    )
+      ? result.roles
+      : [];
 
   return (
 
-    <div className="jobs-wrapper">
+    <div
+      className=
+        "jobs-wrapper"
+    >
 
-      {/* HEADER */}
+      {/* =====================
+          HEADER
+      ===================== */}
 
-      <div className="jobs-header">
+      <div
+        className=
+          "jobs-header"
+      >
 
         <h2>
           Job Recommendations
         </h2>
 
         <p>
-          Jobs matched to your resume skills
+          Jobs matched to your
+          current resume skills
         </p>
+
+        {skills.length > 0 && (
+
+          <div
+            className=
+              "job-skill-context"
+          >
+
+            {skills.map(
+              (
+                skill,
+                index
+              ) => (
+
+                <span
+                  key={index}
+                >
+                  {skill}
+                </span>
+
+              )
+            )}
+
+          </div>
+
+        )}
+
+        {roles.length > 0 && (
+
+          <p>
+            Matched roles:{" "}
+            {roles.join(
+              ", "
+            )}
+          </p>
+
+        )}
 
       </div>
 
+      {/* =====================
+          FILTER
+      ===================== */}
 
-      {/* FILTER BAR */}
+      <div
+        className=
+          "jobs-filter-bar"
+      >
 
-      <div className="jobs-filter-bar">
+        <div
+          className=
+            "filter-box"
+        >
 
-        <div className="filter-box">
-
-          <label className="filter-label">
+          <label
+            className=
+              "filter-label"
+          >
             Experience
           </label>
 
           <select
-            value={experience}
-            onChange={handleExperienceChange}
-            className="experience-select"
+            value={
+              experience
+            }
+            onChange={
+              handleExperienceChange
+            }
+            className=
+              "experience-select"
           >
 
             <option value="fresher">
@@ -297,88 +472,125 @@ function JobRecommendations({ result }) {
 
       </div>
 
-
-      {/* LOADING */}
+      {/* =====================
+          LOADING
+      ===================== */}
 
       {loading && (
 
-        <div className="jobs-loading">
+        <div
+          className=
+            "jobs-loading"
+        >
 
-          Loading jobs for selected
-          experience...
+          Loading jobs for the
+          selected experience...
 
         </div>
 
       )}
 
-
-      {/* JOB GRID */}
+      {/* =====================
+          JOBS
+      ===================== */}
 
       {!loading && (
 
-        <div className="jobs-grid">
+        <div
+          className=
+            "jobs-grid"
+        >
 
           {jobs.length > 0 ? (
 
-            jobs.map((job, i) => (
+            jobs.map(
+              (
+                job,
+                index
+              ) => (
 
-              <div
-                key={i}
-                className="job-card"
-              >
-
-                {/* JOB TITLE */}
-
-                <div className="job-top">
-
-                  <h3 className="job-title">
-
-                    {job.title || job.role}
-
-                  </h3>
-
-                </div>
-
-
-                {/* JOB INFORMATION */}
-
-                <div className="job-info">
-
-                  <p className="company">
-                    {job.company}
-                  </p>
-
-                  <p className="location">
-                    {job.location}
-                  </p>
-
-                </div>
-
-
-                {/* APPLY BUTTON */}
-
-                <button
-                  type="button"
-                  className="apply-btn"
-                  onClick={() =>
-                    handleApply(job)
-                  }
+                <div
+                  key={`${result.resume_id || "resume"}-${index}`}
+                  className=
+                    "job-card"
                 >
 
-                  Apply Now →
+                  <div
+                    className=
+                      "job-top"
+                  >
 
-                </button>
+                    <h3
+                      className=
+                        "job-title"
+                    >
 
-              </div>
+                      {
+                        job.title ||
+                        job.role ||
+                        "Job Opportunity"
+                      }
 
-            ))
+                    </h3>
+
+                  </div>
+
+                  <div
+                    className=
+                      "job-info"
+                  >
+
+                    <p
+                      className=
+                        "company"
+                    >
+                      {
+                        job.company ||
+                        "Company"
+                      }
+                    </p>
+
+                    <p
+                      className=
+                        "location"
+                    >
+                      {
+                        job.location ||
+                        "India"
+                      }
+                    </p>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    className=
+                      "apply-btn"
+                    onClick={() =>
+                      handleApply(
+                        job
+                      )
+                    }
+                  >
+                    Apply Now →
+                  </button>
+
+                </div>
+
+              )
+            )
 
           ) : (
 
-            <p className="no-data">
+            <p
+              className=
+                "no-data"
+            >
 
-              No jobs found for this
-              experience level
+              No jobs are available
+              for the current resume
+              yet. Try changing the
+              experience filter.
 
             </p>
 
@@ -389,9 +601,7 @@ function JobRecommendations({ result }) {
       )}
 
     </div>
-
   );
-
 }
 
 export default JobRecommendations;
