@@ -5,267 +5,330 @@ import {
 
 import "./InterviewPrep.css";
 
-import Chatbot
-  from "../components/Chatbot";
+import Chatbot from "../components/Chatbot";
+
 
 function InterviewPrep({
   result
 }) {
 
+  // ==========================================================
+  // STATE
+  // ==========================================================
+
   const [
     level,
     setLevel
-  ] = useState(
-    "beginner"
-  );
+  ] = useState("beginner");
+
 
   const [
     openIndex,
     setOpenIndex
   ] = useState(null);
 
-  /*
-   * Whenever a NEW resume is
-   * uploaded, reset the page.
-   */
+
+  // ==========================================================
+  // RESET WHEN A NEW RESUME IS UPLOADED
+  // ==========================================================
 
   useEffect(() => {
 
-    setLevel(
-      "beginner"
-    );
+    /*
+     * When the user uploads a different resume,
+     * reset the interview page to Beginner
+     * and close any previously opened answer.
+     *
+     * This prevents the previous resume's UI state
+     * from remaining visible.
+     */
 
-    setOpenIndex(
-      null
-    );
+    setLevel("beginner");
+
+    setOpenIndex(null);
 
   }, [
     result?.resume_id
   ]);
 
-  /*
-   * =========================
-   * NO RESUME
-   * =========================
-   */
+
+  // ==========================================================
+  // NO RESUME
+  // ==========================================================
 
   if (!result) {
 
     return (
 
-      <div
-        className=
-          "interview-wrapper"
-      >
+      <div className="interview-wrapper">
 
-        <div
-          className=
-            "empty-state"
-        >
+        <div className="empty-state">
 
           <h2>
             Upload your resume
           </h2>
 
           <p>
-            Go to Home page and
-            analyze your resume
+            Go to Home page and analyze your resume
           </p>
 
         </div>
 
       </div>
+
     );
   }
 
+
+  // ==========================================================
+  // NO INTERVIEW QUESTIONS
+  // ==========================================================
+
+  if (!result.questions) {
+
+    return (
+
+      <div className="interview-wrapper">
+
+        <div className="empty-state">
+
+          <h2>
+            No interview questions available
+          </h2>
+
+          <p>
+            Please analyze your resume again to generate
+            interview questions.
+          </p>
+
+        </div>
+
+      </div>
+
+    );
+  }
+
+
+  // ==========================================================
+  // CURRENT RESUME QUESTIONS
+  // ==========================================================
+
   /*
-   * =========================
-   * CURRENT RESUME QUESTIONS
-   * =========================
+   * Questions are always taken from the CURRENT
+   * analyzed resume.
+   *
+   * The backend should have already generated these
+   * using the current resume skills.
    */
 
   const questions =
-    result.questions?.[
-      level
-    ] || [];
+    result.questions?.[level] || [];
+
+
+  // ==========================================================
+  // CURRENT RESUME SKILLS
+  // ==========================================================
 
   /*
-   * CURRENT RESUME SKILLS
+   * IMPORTANT:
+   *
+   * We keep the skills available internally because
+   * the current resume context may be needed by the
+   * application.
+   *
+   * BUT WE DO NOT DISPLAY THEM ON THIS PAGE.
+   *
+   * This prevents the large skills list from appearing
+   * below "Questions based on your current resume skills".
    */
 
   const skills =
-    Array.isArray(
-      result.skills
-    )
+    Array.isArray(result.skills)
       ? result.skills
       : [];
 
+
+  // Prevent unused-variable warnings while keeping
+  // the current resume skill context available.
+  void skills;
+
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
   return (
 
-    <div
-      className=
-        "interview-wrapper"
-    >
+    <div className="interview-wrapper">
 
-      {/* =====================
+
+      {/* ======================================================
           HEADER
-      ===================== */}
+      ====================================================== */}
 
-      <div
-        className=
-          "interview-header"
-      >
+      <div className="interview-header">
 
         <h2>
           Interview Preparation
         </h2>
 
         <p>
-          Questions based on
-          your current resume
-          skills
+          Questions based on your current resume skills
         </p>
 
-        {skills.length > 0 && (
-
-          <div
-            className=
-              "interview-skill-context"
-          >
-
-            {skills.map(
-              (
-                skill,
-                index
-              ) => (
-
-                <span
-                  key={index}
-                >
-                  {skill}
-                </span>
-
-              )
-            )}
-
-          </div>
-
-        )}
+        {/*
+         * IMPORTANT:
+         *
+         * DO NOT DISPLAY result.skills HERE.
+         *
+         * The skills are still present in result and are
+         * still used by the backend to generate the questions.
+         *
+         * No skills UI is rendered on this page.
+         */}
 
       </div>
 
-      {/* =====================
-          LEVEL
-      ===================== */}
 
-      <div
-        className=
-          "level-switch"
-      >
+      {/* ======================================================
+          LEVEL SWITCH
+      ====================================================== */}
 
-        {[
-          "beginner",
-          "intermediate",
-          "advanced"
-        ].map(
-          (item) => (
+      <div className="level-switch">
 
-            <button
-              key={item}
-              className={
-                level === item
-                  ? "active"
-                  : ""
-              }
-              onClick={() => {
+        <button
+          className={
+            level === "beginner"
+              ? "active"
+              : ""
+          }
+          onClick={() => {
 
-                setLevel(
-                  item
-                );
+            setLevel("beginner");
 
-                setOpenIndex(
-                  null
-                );
+            setOpenIndex(null);
 
-              }}
-            >
+          }}
+        >
+          Beginner
+        </button>
 
-              {item
-                .charAt(0)
-                .toUpperCase() +
-                item.slice(1)}
 
-            </button>
+        <button
+          className={
+            level === "intermediate"
+              ? "active"
+              : ""
+          }
+          onClick={() => {
 
-          )
-        )}
+            setLevel("intermediate");
+
+            setOpenIndex(null);
+
+          }}
+        >
+          Intermediate
+        </button>
+
+
+        <button
+          className={
+            level === "advanced"
+              ? "active"
+              : ""
+          }
+          onClick={() => {
+
+            setLevel("advanced");
+
+            setOpenIndex(null);
+
+          }}
+        >
+          Advanced
+        </button>
 
       </div>
 
-      {/* =====================
+
+      {/* ======================================================
           QUESTIONS
-      ===================== */}
+      ====================================================== */}
 
-      <div
-        className=
-          "questions-container"
-      >
+      <div className="questions-container">
 
         {questions.length > 0 ? (
 
           questions.map(
-            (q, index) => (
+            (
+              q,
+              index
+            ) => (
 
               <div
-                key={`${result.resume_id || "resume"}-${level}-${index}`}
-                className=
-                  "question-card"
+                key={
+                  `${
+                    result.resume_id ||
+                    "resume"
+                  }-${level}-${index}`
+                }
+                className="question-card"
               >
 
-                <div
-                  className=
-                    "question-row"
-                >
 
-                  <div
-                    className=
-                      "q-badge"
-                  >
+                {/* ==================================================
+                    QUESTION ROW
+                ================================================== */}
+
+                <div className="question-row">
+
+
+                  {/* NUMBER BADGE */}
+
+                  <div className="q-badge">
+
                     {index + 1}
+
                   </div>
 
-                  <div
-                    className=
-                      "q-content"
-                  >
 
-                    <p
-                      className=
-                        "question-text"
-                    >
+                  {/* QUESTION CONTENT */}
+
+                  <div className="q-content">
+
+                    <p className="question-text">
+
                       {
-                        q.question ||
-                        q
+                        typeof q === "string"
+                          ? q
+                          : (
+                              q?.question ||
+                              "No question available."
+                            )
                       }
+
                     </p>
 
+
+                    {/* SHOW / HIDE ANSWER */}
+
                     <button
-                      className=
-                        "toggle-btn"
+                      className="toggle-btn"
                       onClick={() =>
                         setOpenIndex(
-                          openIndex ===
-                            index
+                          openIndex === index
                             ? null
                             : index
                         )
                       }
                     >
 
-                      {openIndex ===
-                        index
-                        ? "Hide Answer"
-                        : "Show Answer"}
+                      {
+                        openIndex === index
+                          ? "Hide Answer"
+                          : "Show Answer"
+                      }
 
                     </button>
 
@@ -273,17 +336,22 @@ function InterviewPrep({
 
                 </div>
 
-                {openIndex ===
-                  index && (
 
-                  <div
-                    className=
-                      "answer-box"
-                  >
+                {/* ==================================================
+                    ANSWER
+                ================================================== */}
+
+                {openIndex === index && (
+
+                  <div className="answer-box">
 
                     {
-                      q.answer ||
-                      "No answer available."
+                      typeof q === "string"
+                        ? "No answer available."
+                        : (
+                            q?.answer ||
+                            "No answer available."
+                          )
                     }
 
                   </div>
@@ -293,32 +361,33 @@ function InterviewPrep({
               </div>
 
             )
+
           )
 
         ) : (
 
-          <div
-            className=
-              "no-data"
-          >
+          /* ======================================================
+             NO QUESTIONS
+          ====================================================== */
+
+          <div className="no-data">
 
             <p>
-              No interview
-              questions were
-              generated for the
-              current resume.
+              No interview questions were generated
+              for the current resume.
             </p>
 
-            {skills.length ===
-              0 && (
 
-              <p>
-                Upload a resume
-                with identifiable
-                skills first.
-              </p>
+            {
+              result.skills?.length === 0 && (
 
-            )}
+                <p>
+                  Upload a resume with identifiable
+                  skills first.
+                </p>
+
+              )
+            }
 
           </div>
 
@@ -326,19 +395,15 @@ function InterviewPrep({
 
       </div>
 
-      {/* =====================
-          CHATBOT
-      ===================== */}
 
-      <div
-        className=
-          "chat-section"
-      >
+      {/* ======================================================
+          CHATBOT
+      ====================================================== */}
+
+      <div className="chat-section">
 
         <Chatbot
-          apiEndpoint=
-            "interview-chat"
-
+          apiEndpoint="interview-chat"
           resumeText={
             result.resume_text ||
             ""
@@ -348,7 +413,9 @@ function InterviewPrep({
       </div>
 
     </div>
+
   );
 }
+
 
 export default InterviewPrep;

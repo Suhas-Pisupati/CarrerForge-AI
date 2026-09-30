@@ -13,12 +13,14 @@ import {
   getProjectGuide
 } from "../api";
 
+
 function ProjectGuide({
   result
 }) {
 
   const location =
     useLocation();
+
 
   // ==========================================================
   // CURRENT PROJECT
@@ -27,6 +29,7 @@ function ProjectGuide({
   const incomingTitle =
     location.state?.projectTitle ||
     "";
+
 
   /*
    * IMPORTANT:
@@ -52,15 +55,18 @@ function ProjectGuide({
             : []
         );
 
+
   const currentResumeText =
     result?.resume_text ||
     location.state?.resumeText ||
     "";
 
+
   const currentResumeId =
     result?.resume_id ||
     location.state?.resumeId ||
     "";
+
 
   // ==========================================================
   // STATE
@@ -73,6 +79,17 @@ function ProjectGuide({
     incomingTitle
   );
 
+
+  /*
+   * IMPORTANT:
+   *
+   * Skills are still stored internally
+   * and sent to the backend.
+   *
+   * They are NOT displayed anywhere
+   * on this page.
+   */
+
   const [
     skills,
     setSkills
@@ -80,15 +97,18 @@ function ProjectGuide({
     currentSkills
   );
 
+
   const [
     guide,
     setGuide
   ] = useState(null);
 
+
   const [
     loading,
     setLoading
   ] = useState(false);
+
 
   // ==========================================================
   // KEEP CURRENT RESUME CONTEXT UPDATED
@@ -112,6 +132,7 @@ function ProjectGuide({
         : []
     );
 
+
     /*
      * Clear an old guide when the
      * resume changes.
@@ -122,6 +143,7 @@ function ProjectGuide({
   }, [
     result?.resume_id
   ]);
+
 
   // ==========================================================
   // FOLDER STRUCTURE FORMATTER
@@ -138,12 +160,14 @@ function ProjectGuide({
         return "No folder structure available.";
       }
 
+
       if (
         typeof folderStructure ===
         "string"
       ) {
         return folderStructure;
       }
+
 
       if (
         Array.isArray(
@@ -154,6 +178,7 @@ function ProjectGuide({
           "\n"
         );
       }
+
 
       if (
         typeof folderStructure ===
@@ -166,10 +191,12 @@ function ProjectGuide({
         );
       }
 
+
       return String(
         folderStructure
       );
     };
+
 
   // ==========================================================
   // DATABASE FORMATTER
@@ -187,6 +214,7 @@ function ProjectGuide({
         );
       }
 
+
       if (
         typeof database ===
         "string"
@@ -198,6 +226,7 @@ function ProjectGuide({
           </p>
         );
       }
+
 
       if (
         Array.isArray(
@@ -216,12 +245,14 @@ function ProjectGuide({
 
                 <li key={index}>
 
-                  {typeof item ===
-                  "string"
-                    ? item
-                    : JSON.stringify(
-                        item
-                      )}
+                  {
+                    typeof item ===
+                    "string"
+                      ? item
+                      : JSON.stringify(
+                          item
+                        )
+                  }
 
                 </li>
 
@@ -231,6 +262,7 @@ function ProjectGuide({
           </ul>
         );
       }
+
 
       if (
         typeof database ===
@@ -260,21 +292,23 @@ function ProjectGuide({
                     {key}:
                   </strong>{" "}
 
-                  {Array.isArray(
-                    value
-                  )
-                    ? value.join(
-                        ", "
-                      )
-                    : typeof value ===
-                        "object" &&
-                      value !== null
-                    ? JSON.stringify(
-                        value
-                      )
-                    : String(
-                        value
-                      )}
+                  {
+                    Array.isArray(
+                      value
+                    )
+                      ? value.join(
+                          ", "
+                        )
+                      : typeof value ===
+                          "object" &&
+                        value !== null
+                      ? JSON.stringify(
+                          value
+                        )
+                      : String(
+                          value
+                        )
+                  }
 
                 </div>
 
@@ -285,12 +319,14 @@ function ProjectGuide({
         );
       }
 
+
       return (
         <p>
           {String(database)}
         </p>
       );
     };
+
 
   // ==========================================================
   // GENERIC LIST FORMATTER
@@ -308,6 +344,7 @@ function ProjectGuide({
         );
       }
 
+
       if (
         Array.isArray(
           data
@@ -322,18 +359,21 @@ function ProjectGuide({
 
             <li key={index}>
 
-              {typeof item ===
-              "string"
-                ? item
-                : JSON.stringify(
-                    item
-                  )}
+              {
+                typeof item ===
+                "string"
+                  ? item
+                  : JSON.stringify(
+                      item
+                    )
+              }
 
             </li>
 
           )
         );
       }
+
 
       if (
         typeof data ===
@@ -346,6 +386,7 @@ function ProjectGuide({
           </li>
         );
       }
+
 
       if (
         typeof data ===
@@ -370,21 +411,23 @@ function ProjectGuide({
                 {key}:
               </strong>{" "}
 
-              {Array.isArray(
-                value
-              )
-                ? value.join(
-                    ", "
-                  )
-                : typeof value ===
-                    "object" &&
-                  value !== null
-                ? JSON.stringify(
-                    value
-                  )
-                : String(
-                    value
-                  )}
+              {
+                Array.isArray(
+                  value
+                )
+                  ? value.join(
+                      ", "
+                    )
+                  : typeof value ===
+                      "object" &&
+                    value !== null
+                  ? JSON.stringify(
+                      value
+                    )
+                  : String(
+                      value
+                    )
+              }
 
             </li>
 
@@ -392,12 +435,14 @@ function ProjectGuide({
         );
       }
 
+
       return (
         <li>
           {String(data)}
         </li>
       );
     };
+
 
   // ==========================================================
   // GENERATE PROJECT GUIDE
@@ -420,6 +465,7 @@ function ProjectGuide({
         return;
       }
 
+
       if (
         !Array.isArray(
           skills
@@ -434,15 +480,23 @@ function ProjectGuide({
         return;
       }
 
+
       setLoading(
         true
       );
+
 
       setGuide(
         null
       );
 
+
       try {
+
+        /*
+         * Always use the CURRENT
+         * resume skills.
+         */
 
         const userSkills =
           Array.isArray(
@@ -453,20 +507,24 @@ function ProjectGuide({
               ]
             : [];
 
+
         console.log(
           "PROJECT GUIDE CURRENT RESUME:",
           currentResumeId
         );
+
 
         console.log(
           "PROJECT GUIDE CURRENT SKILLS:",
           userSkills
         );
 
+
         console.log(
           "PROJECT GUIDE TITLE:",
           title.trim()
         );
+
 
         const res =
           await getProjectGuide({
@@ -478,6 +536,7 @@ function ProjectGuide({
             project_title:
               title.trim(),
 
+
             /*
              * CURRENT RESUME
              */
@@ -485,18 +544,22 @@ function ProjectGuide({
             skills:
               userSkills,
 
+
             resume_text:
               currentResumeText,
+
 
             resume_id:
               currentResumeId
 
           });
 
+
         console.log(
           "PROJECT GUIDE RESPONSE:",
           res.data || res
         );
+
 
         setGuide(
           res.data || res
@@ -509,16 +572,19 @@ function ProjectGuide({
           error
         );
 
+
         console.error(
           "Project guide backend response:",
           error.response?.data
         );
+
 
         alert(
           error.response?.data?.detail ||
           error.response?.data?.message ||
           "Unable to generate project guide."
         );
+
 
         setGuide(
           null
@@ -529,8 +595,11 @@ function ProjectGuide({
         setLoading(
           false
         );
+
       }
+
     };
+
 
   // ==========================================================
   // AUTO GENERATE FROM PROJECT RECOMMENDATION
@@ -544,12 +613,15 @@ function ProjectGuide({
       return;
     }
 
+
     const title =
       incomingTitle.trim();
+
 
     if (!title) {
       return;
     }
+
 
     /*
      * Do not automatically use
@@ -576,19 +648,23 @@ function ProjectGuide({
               : []
           );
 
+
     setProjectTitle(
       title
     );
 
+
     setSkills(
       userSkills
     );
+
 
     if (
       userSkills.length === 0
     ) {
       return;
     }
+
 
     const loadGuide =
       async () => {
@@ -597,9 +673,11 @@ function ProjectGuide({
           true
         );
 
+
         setGuide(
           null
         );
+
 
         try {
 
@@ -608,10 +686,12 @@ function ProjectGuide({
             currentResumeId
           );
 
+
           console.log(
             "AUTO PROJECT GUIDE SKILLS:",
             userSkills
           );
+
 
           const res =
             await getProjectGuide({
@@ -630,10 +710,12 @@ function ProjectGuide({
 
             });
 
+
           console.log(
             "AUTO PROJECT GUIDE RESPONSE:",
             res.data || res
           );
+
 
           setGuide(
             res.data || res
@@ -646,10 +728,12 @@ function ProjectGuide({
             error
           );
 
+
           console.error(
             "Project guide backend response:",
             error.response?.data
           );
+
 
           setGuide(
             null
@@ -660,10 +744,14 @@ function ProjectGuide({
           setLoading(
             false
           );
+
         }
+
       };
 
+
     loadGuide();
+
 
     /*
      * We intentionally react to
@@ -675,6 +763,7 @@ function ProjectGuide({
     result?.resume_id
   ]);
 
+
   // ==========================================================
   // UI
   // ==========================================================
@@ -685,6 +774,7 @@ function ProjectGuide({
       className=
         "project-guide-page"
     >
+
 
       {/* ======================================================
           SEARCH BAR
@@ -709,6 +799,7 @@ function ProjectGuide({
             "Enter any project title"
         />
 
+
         <button
           onClick={() =>
             generateGuide(
@@ -720,63 +811,25 @@ function ProjectGuide({
           }
         >
 
-          {loading
-            ? "Generating..."
-            : "Generate Guide"}
+          {
+            loading
+              ? "Generating..."
+              : "Generate Guide"
+          }
 
         </button>
 
       </div>
 
+
       {/* ======================================================
-          CURRENT SKILLS
+          IMPORTANT:
+          CURRENT SKILLS ARE NOT DISPLAYED HERE.
+          
+          Skills are still stored internally and
+          sent to the backend for personalization.
       ====================================================== */}
 
-      {skills.length > 0 && (
-
-        <div
-          style={{
-            display:
-              "flex",
-            flexWrap:
-              "wrap",
-            gap:
-              "8px",
-            margin:
-              "15px 0"
-          }}
-        >
-
-          {skills.map(
-            (
-              skill,
-              index
-            ) => (
-
-              <span
-                key={index}
-                style={{
-                  padding:
-                    "6px 12px",
-                  borderRadius:
-                    "20px",
-                  background:
-                    "#eef7ef",
-                  color:
-                    "#218838",
-                  fontSize:
-                    "13px"
-                }}
-              >
-                {skill}
-              </span>
-
-            )
-          )}
-
-        </div>
-
-      )}
 
       {/* ======================================================
           EMPTY STATE
@@ -795,6 +848,7 @@ function ProjectGuide({
               Project Guide Generator
             </h2>
 
+
             <p>
               Enter any project title
               or generated project title
@@ -810,6 +864,7 @@ function ProjectGuide({
 
         )}
 
+
       {/* ======================================================
           LOADING
       ====================================================== */}
@@ -820,10 +875,13 @@ function ProjectGuide({
           className=
             "loading-box"
         >
+
           Generating Project Guide...
+
         </div>
 
       )}
+
 
       {/* ======================================================
           GUIDE
@@ -847,17 +905,23 @@ function ProjectGuide({
                 className=
                   "project-main-title"
               >
+
                 {projectTitle}
+
               </h1>
+
 
               <p
                 className=
                   "project-subtitle"
               >
+
                 Complete Development Guide
+
               </p>
 
             </div>
+
 
             {/* ==================================================
                 GUIDE GRID
@@ -867,6 +931,7 @@ function ProjectGuide({
               className=
                 "guide-grid"
             >
+
 
               {/* =================================================
                   OVERVIEW
@@ -881,12 +946,14 @@ function ProjectGuide({
                   📌 Project Overview
                 </h3>
 
+
                 <p>
                   {guide.overview ||
                     "No overview available."}
                 </p>
 
               </div>
+
 
               {/* =================================================
                   ARCHITECTURE
@@ -901,12 +968,14 @@ function ProjectGuide({
                   🏗 Architecture
                 </h3>
 
+
                 <p>
                   {guide.architecture ||
                     "No architecture available."}
                 </p>
 
               </div>
+
 
               {/* =================================================
                   FOLDER STRUCTURE
@@ -921,6 +990,7 @@ function ProjectGuide({
                   📂 Folder Structure
                 </h3>
 
+
                 <pre>
                   {renderFolderStructure(
                     guide.folder_structure
@@ -928,6 +998,7 @@ function ProjectGuide({
                 </pre>
 
               </div>
+
 
               {/* =================================================
                   DATABASE
@@ -942,11 +1013,13 @@ function ProjectGuide({
                   🗄 Database Design
                 </h3>
 
+
                 {renderDatabase(
                   guide.database
                 )}
 
               </div>
+
 
               {/* =================================================
                   API
@@ -961,13 +1034,17 @@ function ProjectGuide({
                   🔗 API Endpoints
                 </h3>
 
+
                 <ul>
+
                   {renderList(
                     guide.apis
                   )}
+
                 </ul>
 
               </div>
+
 
               {/* =================================================
                   DEVELOPMENT STEPS
@@ -981,6 +1058,7 @@ function ProjectGuide({
                 <h3>
                   🚀 Development Steps
                 </h3>
+
 
                 {Array.isArray(
                   guide.steps
@@ -1004,17 +1082,22 @@ function ProjectGuide({
                           className=
                             "step-number"
                         >
+
                           {index + 1}
+
                         </span>
+
 
                         <span>
 
-                          {typeof step ===
-                          "string"
-                            ? step
-                            : JSON.stringify(
-                                step
-                              )}
+                          {
+                            typeof step ===
+                            "string"
+                              ? step
+                              : JSON.stringify(
+                                  step
+                                )
+                          }
 
                         </span>
 
@@ -1034,6 +1117,7 @@ function ProjectGuide({
 
               </div>
 
+
               {/* =================================================
                   ADVANCED FEATURES
               ================================================= */}
@@ -1047,6 +1131,7 @@ function ProjectGuide({
                   ⭐ Advanced Features
                 </h3>
 
+
                 <ul>
 
                   {renderList(
@@ -1056,6 +1141,7 @@ function ProjectGuide({
                 </ul>
 
               </div>
+
 
               {/* =================================================
                   RESOURCES
@@ -1070,6 +1156,7 @@ function ProjectGuide({
                   📚 Resources
                 </h3>
 
+
                 <ul>
 
                   {renderList(
@@ -1080,6 +1167,7 @@ function ProjectGuide({
 
               </div>
 
+
             </div>
 
           </>
@@ -1089,5 +1177,6 @@ function ProjectGuide({
     </div>
   );
 }
+
 
 export default ProjectGuide;

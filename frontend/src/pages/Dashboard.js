@@ -1,8 +1,6 @@
 import UploadResume from "../UploadResume";
 
-import {
-  Bar
-} from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 
 import {
   Chart as ChartJS,
@@ -17,6 +15,7 @@ import "./Dashboard.css";
 import ProjectRecommendations
   from "../components/ProjectRecommendations";
 
+
 ChartJS.register(
   Tooltip,
   CategoryScale,
@@ -24,15 +23,29 @@ ChartJS.register(
   BarElement
 );
 
+
 function Dashboard({
   result,
   setResult
 }) {
 
+  // ==========================================================
+  // CURRENT RESUME DATA
+  // ==========================================================
+
   const atsScore =
     Number(
       result?.ats_score || 0
     );
+
+
+  /*
+   * Always use skills from the CURRENT
+   * analyzed resume.
+   *
+   * This prevents old resume skills
+   * from being reused.
+   */
 
   const skills =
     Array.isArray(
@@ -41,18 +54,56 @@ function Dashboard({
       ? result.skills
       : [];
 
+
   /*
-   * Generate stable-looking
-   * skill values.
+   * Current resume text.
    *
-   * DO NOT use Math.random()
-   * here because the chart used
-   * to change on every render.
+   * This is passed to Project Recommendations
+   * so AI can understand the complete resume,
+   * not only the skill names.
+   */
+
+  const resumeText =
+    result?.resume_text ||
+    "";
+
+
+  /*
+   * Current resume ID.
+   *
+   * This is important when the user uploads
+   * another resume. Project Recommendations
+   * can distinguish the new resume from the
+   * previous resume.
+   */
+
+  const resumeId =
+    result?.resume_id ||
+    "";
+
+
+  // ==========================================================
+  // STABLE SKILL CHART
+  // ==========================================================
+
+  /*
+   * DO NOT use Math.random() here.
+   *
+   * The old Dashboard used:
+   *
+   * Math.random()
+   *
+   * which caused the chart values to change
+   * every time React rendered the component.
+   *
+   * We keep the original chart feature but
+   * use deterministic values.
    */
 
   const skillChart = {
 
-    labels: skills,
+    labels:
+      skills,
 
     datasets: [
       {
@@ -69,20 +120,30 @@ function Dashboard({
         backgroundColor:
           "#1e40af",
 
-        borderRadius: 6
+        borderRadius:
+          6
       }
     ]
   };
 
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
   return (
 
-    <div className="dashboard">
+    <div
+      className="dashboard"
+    >
 
-      {/* =========================
-          UPLOAD
-      ========================= */}
+      {/* ======================================================
+          UPLOAD SECTION
+      ====================================================== */}
 
-      <div className="upload-section">
+      <div
+        className="upload-section"
+      >
 
         <UploadResume
           setResult={
@@ -92,36 +153,47 @@ function Dashboard({
 
       </div>
 
-      {/* =========================
+
+      {/* ======================================================
           RESULTS
-      ========================= */}
+      ====================================================== */}
 
       {result && (
 
         <>
 
-          <div className="dashboard-grid">
+          <div
+            className="dashboard-grid"
+          >
 
-            {/* =====================
+
+            {/* ==================================================
                 ATS SCORE
-            ===================== */}
+            ================================================== */}
 
             <div
               className="card score-card"
             >
 
-              <div className="score-ring">
+              <div
+                className="score-ring"
+              >
 
                 <svg
                   width="120"
                   height="120"
                 >
 
+                  {/* Background circle */}
+
                   <circle
                     cx="60"
                     cy="60"
                     r="50"
                   />
+
+
+                  {/* Progress circle */}
 
                   <circle
                     cx="60"
@@ -133,21 +205,27 @@ function Dashboard({
 
                       strokeDashoffset:
                         314 -
-                        (314 *
-                          atsScore) /
-                          100
+                        (
+                          314 *
+                          atsScore
+                        ) /
+                        100
                     }}
                   />
 
                 </svg>
 
+
                 <div
                   className="score-text"
                 >
+
                   {atsScore}%
+
                 </div>
 
               </div>
+
 
               <p
                 className="card-label"
@@ -157,9 +235,11 @@ function Dashboard({
 
             </div>
 
-            {/* =====================
+
+            {/* ==================================================
                 SKILLS
-            ===================== */}
+                KEEP THIS FEATURE ON DASHBOARD
+            ================================================== */}
 
             <div
               className="card skills-card"
@@ -168,8 +248,11 @@ function Dashboard({
               <div
                 className="skills-header"
               >
+
                 Skills
+
               </div>
+
 
               <div
                 className="skills-list"
@@ -178,13 +261,20 @@ function Dashboard({
                 {skills.length > 0 ? (
 
                   skills.map(
-                    (skill, index) => (
+                    (
+                      skill,
+                      index
+                    ) => (
 
                       <span
-                        key={`${result.resume_id || "resume"}-${index}`}
+                        key={
+                          `${resumeId || "resume"}-${index}-${skill}`
+                        }
                         className="skill-pill"
                       >
+
                         {skill}
+
                       </span>
 
                     )
@@ -192,17 +282,22 @@ function Dashboard({
 
                 ) : (
 
-                  <p className="empty">
+                  <p
+                    className="empty"
+                  >
+
                     No skills detected
+
                   </p>
 
                 )}
 
               </div>
 
-              {/* =====================
+
+              {/* ==================================================
                   SKILL CHART
-              ===================== */}
+              ================================================== */}
 
               {skills.length > 0 && (
 
@@ -218,6 +313,7 @@ function Dashboard({
                     data={
                       skillChart
                     }
+
                     options={{
                       responsive:
                         true,
@@ -235,9 +331,10 @@ function Dashboard({
 
           </div>
 
-          {/* =========================
+
+          {/* ====================================================
               PROJECT RECOMMENDATIONS
-          ========================= */}
+          ==================================================== */}
 
           {skills.length > 0 && (
 
@@ -247,19 +344,33 @@ function Dashboard({
             >
 
               <ProjectRecommendations
+
+                /*
+                 * CURRENT RESUME SKILLS
+                 */
+
                 skills={
                   skills
                 }
 
+
+                /*
+                 * CURRENT RESUME TEXT
+                 */
+
                 resumeText={
-                  result.resume_text ||
-                  ""
+                  resumeText
                 }
 
+
+                /*
+                 * CURRENT RESUME ID
+                 */
+
                 resumeId={
-                  result.resume_id ||
-                  ""
+                  resumeId
                 }
+
               />
 
             </div>
@@ -273,5 +384,6 @@ function Dashboard({
     </div>
   );
 }
+
 
 export default Dashboard;

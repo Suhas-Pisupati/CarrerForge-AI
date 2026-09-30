@@ -9,6 +9,7 @@ import {
 
 import "./JobRecommendations.css";
 
+
 function JobRecommendations({
   result
 }) {
@@ -18,6 +19,7 @@ function JobRecommendations({
     setJobs
   ] = useState([]);
 
+
   const [
     experience,
     setExperience
@@ -25,18 +27,22 @@ function JobRecommendations({
     "fresher"
   );
 
+
   const [
     loading,
     setLoading
   ] = useState(false);
 
-  /*
-   * =========================
-   * LOAD NEW RESUME JOBS
-   * =========================
-   */
+
+  // =========================================================
+  // LOAD JOBS FOR CURRENT RESUME
+  // =========================================================
 
   useEffect(() => {
+
+    /*
+     * No resume available
+     */
 
     if (!result) {
 
@@ -45,10 +51,17 @@ function JobRecommendations({
       return;
     }
 
+
     /*
      * IMPORTANT:
-     * Old jobs are removed when
-     * resume_id changes.
+     *
+     * Whenever a new resume is uploaded,
+     * result.resume_id changes.
+     *
+     * We completely replace the old jobs.
+     *
+     * This prevents jobs from the previous
+     * resume remaining on the screen.
      */
 
     setJobs(
@@ -65,73 +78,163 @@ function JobRecommendations({
     result?.resume_id
   ]);
 
-  /*
-   * =========================
-   * FETCH JOBS
-   * =========================
-   */
+
+  // =========================================================
+  // FETCH FILTERED JOBS
+  // =========================================================
 
   const fetchFilteredJobs =
     async (
       selectedExperience
     ) => {
 
+      /*
+       * No resume
+       */
+
       if (!result) {
         return;
       }
+
 
       setLoading(
         true
       );
 
+
       try {
+
+        /*
+         * =====================================================
+         * CURRENT RESUME SKILLS
+         * =====================================================
+         *
+         * These are taken from the CURRENT resume only.
+         */
 
         const currentSkills =
           Array.isArray(
             result.skills
           )
-            ? result.skills
+            ? [
+                ...result.skills
+              ]
             : [];
+
+
+        /*
+         * =====================================================
+         * CURRENT RESUME ROLES
+         * =====================================================
+         */
 
         const currentRoles =
           Array.isArray(
             result.roles
           )
-            ? result.roles
+            ? [
+                ...result.roles
+              ]
             : [];
+
+
+        console.log(
+          "JOB SEARCH CURRENT RESUME ID:",
+          result.resume_id
+        );
+
+
+        console.log(
+          "JOB SEARCH CURRENT SKILLS:",
+          currentSkills
+        );
+
+
+        console.log(
+          "JOB SEARCH CURRENT ROLES:",
+          currentRoles
+        );
+
+
+        /*
+         * =====================================================
+         * API REQUEST
+         * =====================================================
+         *
+         * All current resume information is sent.
+         *
+         * Skills and roles are NOT displayed in the UI.
+         * They are used internally by the backend.
+         */
 
         const res =
           await filterJobs({
 
             /*
-             * CURRENT RESUME ONLY
+             * Resume-derived roles
              */
 
             roles:
               currentRoles,
 
+
+            /*
+             * Resume-derived skills
+             */
+
             skills:
               currentSkills,
+
+
+            /*
+             * Full current resume text
+             */
 
             resume_text:
               result.resume_text ||
               "",
 
+
+            /*
+             * Current resume ID
+             *
+             * This prevents using stale
+             * information from an older resume.
+             */
+
             resume_id:
               result.resume_id ||
               "",
 
+
+            /*
+             * Selected experience
+             */
+
             experience:
               selectedExperience
+
           });
+
+
+        /*
+         * =====================================================
+         * GET NEW JOBS
+         * =====================================================
+         */
 
         const newJobs =
           res?.data?.jobs ||
           res?.jobs ||
           [];
 
+
         /*
-         * Replace old jobs completely.
+         * =====================================================
+         * REPLACE OLD JOBS COMPLETELY
+         * =====================================================
+         *
+         * Never append new jobs to old jobs.
          */
 
         setJobs(
@@ -142,13 +245,23 @@ function JobRecommendations({
             : []
         );
 
-      } catch (error) {
+
+      } catch (
+        error
+      ) {
 
         console.error(
           "JOB FILTER ERROR:",
           error.response?.data ||
             error
         );
+
+
+        /*
+         * If the current search fails,
+         * don't show jobs belonging to
+         * an older resume.
+         */
 
         setJobs([]);
 
@@ -157,14 +270,15 @@ function JobRecommendations({
         setLoading(
           false
         );
+
       }
+
     };
 
-  /*
-   * =========================
-   * EXPERIENCE
-   * =========================
-   */
+
+  // =========================================================
+  // EXPERIENCE CHANGE HANDLER
+  // =========================================================
 
   const handleExperienceChange =
     async (
@@ -174,23 +288,33 @@ function JobRecommendations({
       const value =
         event.target.value;
 
+
       setExperience(
         value
       );
 
+
       await fetchFilteredJobs(
         value
       );
+
     };
 
-  /*
-   * =========================
-   * APPLY
-   * =========================
-   */
+
+  // =========================================================
+  // APPLY JOB
+  // =========================================================
+  //
+  // Prevent duplicate applications
+  // and update Jobs Applied Today.
+  // =========================================================
 
   const handleApply =
     (job) => {
+
+      /*
+       * Get existing application history.
+       */
 
       const existingJobs =
         JSON.parse(
@@ -199,21 +323,50 @@ function JobRecommendations({
           ) || "[]"
         );
 
+
+      /*
+       * Support both API formats:
+       *
+       * job.title
+       * job.role
+       */
+
       const jobTitle =
         job.title ||
         job.role ||
         "Job";
 
+
+      /*
+       * Check if this job was
+       * already applied for.
+       */
+
       const alreadyApplied =
         existingJobs.some(
-          (item) =>
+          (
+            item
+          ) =>
             item.title ===
               jobTitle &&
             item.company ===
               job.company
         );
 
-      if (!alreadyApplied) {
+
+      // =======================================================
+      // ONLY COUNT NEW APPLICATIONS
+      // =======================================================
+
+      if (
+        !alreadyApplied
+      ) {
+
+        /*
+         * -----------------------------------------------
+         * SAVE APPLICATION HISTORY
+         * -----------------------------------------------
+         */
 
         existingJobs.push({
 
@@ -226,7 +379,9 @@ function JobRecommendations({
           appliedAt:
             new Date()
               .toISOString()
+
         });
+
 
         localStorage.setItem(
           "jobsApplied",
@@ -235,15 +390,24 @@ function JobRecommendations({
           )
         );
 
+
+        /*
+         * -----------------------------------------------
+         * JOBS APPLIED TODAY
+         * -----------------------------------------------
+         */
+
         const today =
           new Date()
             .toISOString()
             .split("T")[0];
 
+
         const savedDate =
           localStorage.getItem(
             "jobsAppliedDate"
           );
+
 
         let jobsApplied =
           Number(
@@ -252,15 +416,39 @@ function JobRecommendations({
             ) || 0
           );
 
+
+        /*
+         * -----------------------------------------------
+         * RESET COUNT WHEN NEW DAY STARTS
+         * -----------------------------------------------
+         */
+
         if (
           savedDate !==
           today
         ) {
-          jobsApplied = 0;
+
+          jobsApplied =
+            0;
+
         }
+
+
+        /*
+         * -----------------------------------------------
+         * INCREASE TODAY'S COUNT
+         * -----------------------------------------------
+         */
 
         jobsApplied +=
           1;
+
+
+        /*
+         * -----------------------------------------------
+         * SAVE TODAY'S COUNT
+         * -----------------------------------------------
+         */
 
         localStorage.setItem(
           "jobsAppliedToday",
@@ -269,23 +457,40 @@ function JobRecommendations({
           )
         );
 
+
         localStorage.setItem(
           "jobsAppliedDate",
           today
         );
+
+
+        /*
+         * -----------------------------------------------
+         * UPDATE DASHBOARD IMMEDIATELY
+         * -----------------------------------------------
+         */
 
         window.dispatchEvent(
           new Event(
             "dashboardStatsUpdated"
           )
         );
+
       }
+
+
+      // =======================================================
+      // OPEN APPLICATION LINK
+      // =======================================================
 
       const applyUrl =
         job.link ||
         job.apply_link;
 
-      if (applyUrl) {
+
+      if (
+        applyUrl
+      ) {
 
         window.open(
           applyUrl,
@@ -298,16 +503,19 @@ function JobRecommendations({
         alert(
           "Application link is not available."
         );
+
       }
+
     };
 
-  /*
-   * =========================
-   * NO RESUME
-   * =========================
-   */
 
-  if (!result) {
+  // =========================================================
+  // EMPTY STATE — NO RESUME
+  // =========================================================
+
+  if (
+    !result
+  ) {
 
     return (
 
@@ -325,6 +533,7 @@ function JobRecommendations({
             Upload your resume first
           </h2>
 
+
           <p>
             Go to Home page and
             analyze your resume
@@ -333,8 +542,21 @@ function JobRecommendations({
         </div>
 
       </div>
+
     );
+
   }
+
+
+  // =========================================================
+  // CURRENT RESUME DATA
+  // =========================================================
+  //
+  // These values are intentionally NOT rendered
+  // on the page.
+  //
+  // They are available for the job API.
+  // =========================================================
 
   const skills =
     Array.isArray(
@@ -343,12 +565,18 @@ function JobRecommendations({
       ? result.skills
       : [];
 
+
   const roles =
     Array.isArray(
       result.roles
     )
       ? result.roles
       : [];
+
+
+  // =========================================================
+  // MAIN PAGE
+  // =========================================================
 
   return (
 
@@ -357,9 +585,9 @@ function JobRecommendations({
         "jobs-wrapper"
     >
 
-      {/* =====================
+      {/* =====================================================
           HEADER
-      ===================== */}
+          ===================================================== */}
 
       <div
         className=
@@ -370,53 +598,44 @@ function JobRecommendations({
           Job Recommendations
         </h2>
 
+
         <p>
           Jobs matched to your
-          current resume skills
+          resume skills
         </p>
 
-        {skills.length > 0 && (
 
-          <div
-            className=
-              "job-skill-context"
-          >
+        {/* ===================================================
+            IMPORTANT:
+            
+            DO NOT DISPLAY SKILLS HERE.
+            
+            Skills are still stored in:
+            
+            const skills = result.skills
+            
+            and sent to the backend.
+            =================================================== */}
 
-            {skills.map(
-              (
-                skill,
-                index
-              ) => (
 
-                <span
-                  key={index}
-                >
-                  {skill}
-                </span>
-
-              )
-            )}
-
-          </div>
-
-        )}
-
-        {roles.length > 0 && (
-
-          <p>
-            Matched roles:{" "}
-            {roles.join(
-              ", "
-            )}
-          </p>
-
-        )}
+        {/* ===================================================
+            IMPORTANT:
+            
+            DO NOT DISPLAY ROLES HERE.
+            
+            Roles are still stored in:
+            
+            const roles = result.roles
+            
+            and sent to the backend.
+            =================================================== */}
 
       </div>
 
-      {/* =====================
-          FILTER
-      ===================== */}
+
+      {/* =====================================================
+          FILTER BAR
+          ===================================================== */}
 
       <div
         className=
@@ -432,8 +651,11 @@ function JobRecommendations({
             className=
               "filter-label"
           >
+
             Experience
+
           </label>
+
 
           <select
             value={
@@ -446,23 +668,37 @@ function JobRecommendations({
               "experience-select"
           >
 
-            <option value="fresher">
+            <option
+              value="fresher"
+            >
               Fresher
             </option>
 
-            <option value="1">
+
+            <option
+              value="1"
+            >
               1 Year
             </option>
 
-            <option value="2">
+
+            <option
+              value="2"
+            >
               2 Years
             </option>
 
-            <option value="3">
+
+            <option
+              value="3"
+            >
               3 Years
             </option>
 
-            <option value="5">
+
+            <option
+              value="5"
+            >
               5+ Years
             </option>
 
@@ -472,9 +708,10 @@ function JobRecommendations({
 
       </div>
 
-      {/* =====================
+
+      {/* =====================================================
           LOADING
-      ===================== */}
+          ===================================================== */}
 
       {loading && (
 
@@ -483,16 +720,17 @@ function JobRecommendations({
             "jobs-loading"
         >
 
-          Loading jobs for the
-          selected experience...
+          Loading jobs for selected
+          experience...
 
         </div>
 
       )}
 
-      {/* =====================
-          JOBS
-      ===================== */}
+
+      {/* =====================================================
+          JOB GRID
+          ===================================================== */}
 
       {!loading && (
 
@@ -510,10 +748,19 @@ function JobRecommendations({
               ) => (
 
                 <div
-                  key={`${result.resume_id || "resume"}-${index}`}
+                  key={
+                    `${
+                      result.resume_id ||
+                      "resume"
+                    }-${index}`
+                  }
                   className=
                     "job-card"
                 >
+
+                  {/* =========================================
+                      JOB TITLE
+                      ========================================= */}
 
                   <div
                     className=
@@ -535,6 +782,11 @@ function JobRecommendations({
 
                   </div>
 
+
+                  {/* =========================================
+                      JOB INFORMATION
+                      ========================================= */}
+
                   <div
                     className=
                       "job-info"
@@ -544,23 +796,33 @@ function JobRecommendations({
                       className=
                         "company"
                     >
+
                       {
                         job.company ||
                         "Company"
                       }
+
                     </p>
+
 
                     <p
                       className=
                         "location"
                     >
+
                       {
                         job.location ||
                         "India"
                       }
+
                     </p>
 
                   </div>
+
+
+                  {/* =========================================
+                      APPLY BUTTON
+                      ========================================= */}
 
                   <button
                     type="button"
@@ -572,7 +834,9 @@ function JobRecommendations({
                       )
                     }
                   >
+
                     Apply Now →
+
                   </button>
 
                 </div>
@@ -587,10 +851,8 @@ function JobRecommendations({
                 "no-data"
             >
 
-              No jobs are available
-              for the current resume
-              yet. Try changing the
-              experience filter.
+              No jobs found for this
+              experience level
 
             </p>
 
@@ -601,7 +863,10 @@ function JobRecommendations({
       )}
 
     </div>
+
   );
+
 }
+
 
 export default JobRecommendations;

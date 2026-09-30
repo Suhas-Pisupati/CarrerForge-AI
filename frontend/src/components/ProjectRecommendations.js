@@ -13,24 +13,29 @@ function ProjectRecommendations({
 
   const navigate = useNavigate();
 
-  /*
-   * Current resume skills only.
-   */
-  const currentSkills = Array.isArray(skills) ? skills : [];
+  // ==========================================================
+  // CURRENT RESUME SKILLS
+  // ==========================================================
+  // Skills are used internally for AI generation.
+  // They are NOT displayed on this page.
+  // ==========================================================
 
-  /*
-   * Clear old projects whenever
-   * the resume changes.
-   */
+  const currentSkills = Array.isArray(skills)
+    ? skills
+    : [];
+
+  // ==========================================================
+  // CLEAR OLD PROJECTS WHEN NEW RESUME IS UPLOADED
+  // ==========================================================
+
   useEffect(() => {
     setProjects([]);
   }, [resumeId]);
 
-  /*
-   * =========================
-   * GENERATE PROJECTS
-   * =========================
-   */
+  // ==========================================================
+  // GENERATE PROJECT RECOMMENDATIONS
+  // ==========================================================
+
   const generateProjects = async () => {
     if (currentSkills.length === 0) {
       alert(
@@ -41,16 +46,35 @@ function ProjectRecommendations({
 
     setLoading(true);
 
+    // Clear previous projects immediately
+    // so old resume recommendations are not visible
+    // while the new resume is being processed.
+    setProjects([]);
+
     try {
       console.log(
-        "PROJECT RECOMMENDATION SKILLS:",
+        "PROJECT RECOMMENDATION CURRENT RESUME ID:",
+        resumeId
+      );
+
+      console.log(
+        "PROJECT RECOMMENDATION CURRENT SKILLS:",
         currentSkills
       );
 
+      console.log(
+        "PROJECT RECOMMENDATION RESUME TEXT:",
+        resumeText
+          ? "Resume text available"
+          : "No resume text available"
+      );
+
+      // ======================================================
+      // IMPORTANT:
+      // Send ONLY the CURRENT resume context.
+      // ======================================================
+
       const res = await getProjectRecommendations({
-        /*
-         * CURRENT RESUME ONLY
-         */
         skills: currentSkills,
 
         resume_text: resumeText,
@@ -73,6 +97,7 @@ function ProjectRecommendations({
           ? generated
           : []
       );
+
     } catch (error) {
       console.error(
         "PROJECT GENERATION ERROR:",
@@ -80,58 +105,68 @@ function ProjectRecommendations({
       );
 
       setProjects([]);
+
     } finally {
       setLoading(false);
     }
   };
 
-  /*
-   * =========================
-   * OPEN PROJECT GUIDE
-   * =========================
-   */
+  // ==========================================================
+  // OPEN COMPLETE PROJECT GUIDE
+  // ==========================================================
+
   const openProject = (title) => {
+    if (!title) {
+      return;
+    }
+
     navigate("/project-guide", {
       state: {
         projectTitle: title,
+
+        // Pass current resume context
+        // to Project Guide.
         skills: currentSkills,
+
         resumeText: resumeText,
+
         resumeId: resumeId,
       },
     });
   };
 
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
   return (
     <div className="project-section">
 
-      {/* =========================
+      {/* ======================================================
           HEADER
-          ========================= */}
+          ====================================================== */}
+
       <div className="project-header">
 
         <h2>
           AI Project Recommender
         </h2>
 
-        {currentSkills.length > 0 && (
-          <div className="project-skill-context">
+        {/*
+          IMPORTANT:
+          The skills list has intentionally been removed.
 
-            {currentSkills.map(
-              (skill, index) => (
-                <span key={index}>
-                  {skill}
-                </span>
-              )
-            )}
-
-          </div>
-        )}
+          Skills are still sent to the backend internally,
+          but they are NOT displayed underneath the heading.
+        */}
 
       </div>
 
-      {/* =========================
+
+      {/* ======================================================
           GENERATE BUTTON
-          ========================= */}
+          ====================================================== */}
+
       <div className="project-button-wrap">
 
         <button
@@ -146,156 +181,187 @@ function ProjectRecommendations({
 
       </div>
 
-      {/* =========================
+
+      {/* ======================================================
           LOADING
-          ========================= */}
+          ====================================================== */}
+
       {loading && (
         <div className="project-loading">
           Generating Projects...
         </div>
       )}
 
-      {/* =========================
+
+      {/* ======================================================
           PROJECT GRID
-          ========================= */}
-      {!loading && projects.length > 0 && (
-        <div className="project-grid">
+          ====================================================== */}
 
-          {projects.map(
-            (project, index) => (
-              <div
-                key={index}
-                className="project-card"
-              >
+      {!loading &&
+        projects.length > 0 && (
 
-                {/* =========================
-                    PROJECT TOP
-                    ========================= */}
-                <div className="project-top">
+          <div className="project-grid">
 
-                  <h3 className="project-title">
-                    {project.title}
-                  </h3>
+            {projects.map(
+              (project, index) => (
 
-                  <span
-                    className={`level-badge ${
-                      project.difficulty?.toLowerCase() ||
-                      ""
-                    }`}
-                  >
-                    {project.difficulty ||
-                      "Intermediate"}
-                  </span>
+                <div
+                  key={index}
+                  className="project-card"
+                >
 
-                </div>
+                  {/* ==========================================
+                      PROJECT TOP
+                      ========================================== */}
 
-                {/* =========================
-                    PROJECT BODY
-                    ========================= */}
-                <div className="project-card-body">
+                  <div className="project-top">
 
-                  {/* TECH STACK */}
-                  <div className="tech-stack-box">
+                    <h3 className="project-title">
+                      {project.title}
+                    </h3>
 
-                    <span className="label">
-                      Tech Stack
+
+                    <span
+                      className={`level-badge ${
+                        project.difficulty?.toLowerCase() || ""
+                      }`}
+                    >
+                      {project.difficulty ||
+                        "Intermediate"}
                     </span>
-
-                    <div className="value">
-                      {project.tech_stack ||
-                        "N/A"}
-                    </div>
 
                   </div>
 
-                  {/* ARCHITECTURE */}
-                  <div className="arch-box">
 
-                    <span className="label">
-                      Architecture
-                    </span>
+                  {/* ==========================================
+                      PROJECT BODY
+                      ========================================== */}
 
-                    <div className="value">
-                      {project.architecture ||
-                        "N/A"}
+                  <div className="project-card-body">
+
+                    {/* ========================================
+                        TECH STACK
+                        ======================================== */}
+
+                    <div className="tech-stack-box">
+
+                      <span className="label">
+                        Tech Stack
+                      </span>
+
+                      <div className="value">
+                        {project.tech_stack ||
+                          "N/A"}
+                      </div>
+
                     </div>
 
-                  </div>
 
-                  {/* FEATURES */}
-                  <div className="feature-section">
+                    {/* ========================================
+                        ARCHITECTURE
+                        ======================================== */}
 
-                    <div className="feature-title">
-                      Key Features
+                    <div className="arch-box">
+
+                      <span className="label">
+                        Architecture
+                      </span>
+
+                      <div className="value">
+                        {project.architecture ||
+                          "N/A"}
+                      </div>
+
                     </div>
 
-                    <div className="feature-list">
 
-                      {Array.isArray(
-                        project.features
-                      ) &&
-                      project.features.length > 0 ? (
+                    {/* ========================================
+                        FEATURES
+                        ======================================== */}
 
-                        project.features.map(
-                          (
-                            feature,
-                            featureIndex
-                          ) => (
-                            <span
-                              key={
-                                featureIndex
-                              }
-                              className="feature-chip"
-                            >
-                              {feature}
-                            </span>
+                    <div className="feature-section">
+
+                      <div className="feature-title">
+                        Key Features
+                      </div>
+
+
+                      <div className="feature-list">
+
+                        {Array.isArray(
+                          project.features
+                        ) &&
+                        project.features.length > 0 ? (
+
+                          project.features.map(
+                            (
+                              feature,
+                              featureIndex
+                            ) => (
+
+                              <span
+                                key={
+                                  featureIndex
+                                }
+                                className="feature-chip"
+                              >
+                                {feature}
+                              </span>
+
+                            )
                           )
-                        )
 
-                      ) : (
+                        ) : (
 
-                        <span className="no-feature">
-                          No features available
-                        </span>
+                          <span className="no-feature">
+                            No features available
+                          </span>
 
-                      )}
+                        )}
+
+                      </div>
 
                     </div>
 
                   </div>
 
+
+                  {/* ==========================================
+                      PROJECT FOOTER
+                      ========================================== */}
+
+                  <div className="project-card-footer">
+
+                    <button
+                      className="open-project-btn"
+                      onClick={() =>
+                        openProject(
+                          project.title
+                        )
+                      }
+                    >
+                      View Complete Guide
+                    </button>
+
+                  </div>
+
                 </div>
 
-                {/* =========================
-                    FOOTER
-                    ========================= */}
-                <div className="project-card-footer">
+              )
+            )}
 
-                  <button
-                    className="open-project-btn"
-                    onClick={() =>
-                      openProject(
-                        project.title
-                      )
-                    }
-                  >
-                    View Complete Guide
-                  </button>
+          </div>
 
-                </div>
+        )}
 
-              </div>
-            )
-          )}
 
-        </div>
-      )}
-
-      {/* =========================
+      {/* ======================================================
           EMPTY STATE
-          ========================= */}
+          ====================================================== */}
+
       {!loading &&
         projects.length === 0 && (
+
           <div className="project-empty-state">
 
             Click{" "}
@@ -304,10 +370,10 @@ function ProjectRecommendations({
               Generate Project Ideas
             </strong>{" "}
 
-            to get project
-            recommendations.
+            to get project recommendations.
 
           </div>
+
         )}
 
     </div>

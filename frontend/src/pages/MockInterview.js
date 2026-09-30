@@ -1,84 +1,196 @@
-import { useState, useEffect, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useRef
+} from "react";
+
 import {
   startMockInterview,
   evaluateMockInterview
 } from "../api";
-import { useNavigate } from "react-router-dom";
+
+import {
+  useNavigate
+} from "react-router-dom";
+
 import "./MockInterview.css";
 
+
 function MockInterview({ result }) {
-  const navigate = useNavigate();
 
-  const [questions, setQuestions] = useState([]);
-  const [current, setCurrent] = useState(0);
+  const navigate =
+    useNavigate();
 
-  const [answer, setAnswer] = useState("");
-  const [feedback, setFeedback] = useState(null);
 
-  const [started, setStarted] = useState(false);
-  const [scores, setScores] = useState([]);
+  // ==========================================================
+  // INTERVIEW STATE
+  // ==========================================================
 
-  const [loading, setLoading] = useState(false);
-  const [starting, setStarting] = useState(false);
+  const [
+    questions,
+    setQuestions
+  ] = useState([]);
 
-  const [completed, setCompleted] = useState(false);
+
+  const [
+    current,
+    setCurrent
+  ] = useState(0);
+
+
+  const [
+    answer,
+    setAnswer
+  ] = useState("");
+
+
+  const [
+    feedback,
+    setFeedback
+  ] = useState(null);
+
+
+  const [
+    started,
+    setStarted
+  ] = useState(false);
+
+
+  const [
+    scores,
+    setScores
+  ] = useState([]);
+
+
+  const [
+    loading,
+    setLoading
+  ] = useState(false);
+
+
+  const [
+    starting,
+    setStarting
+  ] = useState(false);
+
+
+  const [
+    completed,
+    setCompleted
+  ] = useState(false);
+
+
+  // ==========================================================
+  // PREVENT DUPLICATE CORRECT ANSWER COUNTING
+  // ==========================================================
 
   const countedQuestionsRef =
     useRef(new Set());
 
+
   // ==========================================================
-  // USER KEY
+  // GET CURRENT USER KEY
   // ==========================================================
 
   const getUserKey = () => {
+
     const email =
-      localStorage.getItem("user_email") ||
+      localStorage.getItem(
+        "user_email"
+      ) ||
       "guest";
+
 
     return email
       .toLowerCase()
-      .replace(/[^a-z0-9]/g, "_");
+      .replace(
+        /[^a-z0-9]/g,
+        "_"
+      );
   };
 
+
   // ==========================================================
-  // SCORE STORAGE KEY
+  // GET MOCK SCORE STORAGE KEY
   // ==========================================================
 
   const getMockScoreKey = () => {
+
     return `mockCorrectAnswers_${getUserKey()}`;
+
   };
 
+
   // ==========================================================
-  // RESET WHEN NEW RESUME IS UPLOADED
+  // RESET INTERVIEW WHEN A NEW RESUME IS UPLOADED
   // ==========================================================
 
   useEffect(() => {
+
+    /*
+     * IMPORTANT:
+     *
+     * When resume_id changes, it means
+     * a different resume has been analyzed.
+     *
+     * Reset the old interview so questions
+     * from the previous resume are never reused.
+     */
+
     setQuestions([]);
+
     setCurrent(0);
+
     setAnswer("");
+
     setFeedback(null);
+
     setStarted(false);
+
     setScores([]);
+
     setCompleted(false);
+
+    setLoading(false);
+
+    setStarting(false);
+
 
     countedQuestionsRef.current =
       new Set();
 
-    if (window.speechSynthesis) {
+
+    /*
+     * Stop any currently playing
+     * interview question.
+     */
+
+    if (
+      window.speechSynthesis
+    ) {
+
       window.speechSynthesis.cancel();
+
     }
-  }, [result?.resume_id]);
+
+  }, [
+    result?.resume_id
+  ]);
+
 
   // ==========================================================
   // SPEECH RECOGNITION
   // ==========================================================
 
   const startVoice = () => {
+
     const SpeechRecognition =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
 
+
     if (!SpeechRecognition) {
+
       alert(
         "Voice recognition is not supported in this browser. Please use Google Chrome."
       );
@@ -86,579 +198,1024 @@ function MockInterview({ result }) {
       return;
     }
 
+
     const recognition =
       new SpeechRecognition();
 
-    recognition.lang = "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+
+    recognition.lang =
+      "en-US";
+
+
+    recognition.continuous =
+      false;
+
+
+    recognition.interimResults =
+      false;
+
 
     recognition.onstart = () => {
+
       console.log(
         "Voice recognition started"
       );
+
     };
 
-    recognition.onresult = (event) => {
-      const transcript =
-        event.results[0][0].transcript;
 
-      setAnswer((previous) => {
-        if (previous.trim()) {
-          return `${previous} ${transcript}`;
-        }
+    recognition.onresult =
+      (event) => {
 
-        return transcript;
-      });
-    };
+        const transcript =
+          event
+            .results[0][0]
+            .transcript;
 
-    recognition.onerror = (event) => {
-      console.error(
-        "Speech recognition error:",
-        event.error
+
+        setAnswer(
+          (previous) => {
+
+            if (
+              previous.trim()
+            ) {
+
+              return `${previous} ${transcript}`;
+
+            }
+
+
+            return transcript;
+
+          }
+        );
+
+      };
+
+
+    recognition.onerror =
+      (event) => {
+
+        console.error(
+          "Speech recognition error:",
+          event.error
+        );
+
+      };
+
+
+    recognition.onend = () => {
+
+      console.log(
+        "Voice recognition ended"
       );
+
     };
+
 
     try {
+
       recognition.start();
+
     } catch (error) {
+
       console.error(
         "Unable to start speech recognition:",
         error
       );
+
     }
+
   };
+
 
   // ==========================================================
   // TEXT TO SPEECH
   // ==========================================================
 
-  const speak = (text) => {
+  const speak = (
+    text
+  ) => {
+
     if (!text) {
       return;
     }
 
-    if (!window.speechSynthesis) {
+
+    if (
+      !window.speechSynthesis
+    ) {
       return;
     }
 
+
     window.speechSynthesis.cancel();
+
 
     const speech =
       new SpeechSynthesisUtterance(
         text
       );
 
-    speech.lang = "en-US";
-    speech.rate = 0.95;
-    speech.pitch = 1;
+
+    speech.lang =
+      "en-US";
+
+
+    speech.rate =
+      0.95;
+
+
+    speech.pitch =
+      1;
+
 
     window.speechSynthesis.speak(
       speech
     );
+
   };
+
 
   // ==========================================================
   // START MOCK INTERVIEW
   // ==========================================================
 
-  const startInterview = async () => {
-    if (starting) {
-      return;
-    }
+  const startInterview =
+    async () => {
 
-    if (!result) {
-      alert(
-        "Please upload and analyze a resume first."
-      );
+      if (starting) {
+        return;
+      }
 
-      return;
-    }
 
-    const userSkills =
-      Array.isArray(result.skills)
-        ? [...result.skills]
-        : [];
+      // ------------------------------------------------------
+      // RESUME CHECK
+      // ------------------------------------------------------
 
-    if (userSkills.length === 0) {
-      alert(
-        "No skills were detected from the current resume. Please upload another resume."
-      );
+      if (!result) {
 
-      return;
-    }
-
-    setStarting(true);
-
-    try {
-      console.log(
-        "MOCK INTERVIEW CURRENT RESUME ID:",
-        result.resume_id
-      );
-
-      console.log(
-        "MOCK INTERVIEW CURRENT SKILLS:",
-        userSkills
-      );
-
-      const res =
-        await startMockInterview({
-          skills: userSkills,
-
-          resume_text:
-            result.resume_text || "",
-
-          resume_id:
-            result.resume_id || "",
-
-          roles:
-            Array.isArray(result.roles)
-              ? result.roles
-              : []
-        });
-
-      console.log(
-        "MOCK INTERVIEW RESPONSE:",
-        res.data || res
-      );
-
-      const receivedQuestions =
-        res.data?.questions ||
-        res.questions ||
-        [];
-
-      if (
-        !Array.isArray(
-          receivedQuestions
-        ) ||
-        receivedQuestions.length === 0
-      ) {
         alert(
-          "No interview questions were generated. Please try again."
+          "Please upload and analyze a resume first."
         );
 
         return;
       }
 
-      setQuestions(
-        receivedQuestions
+
+      // ------------------------------------------------------
+      // CURRENT RESUME SKILLS
+      // ------------------------------------------------------
+
+      /*
+       * IMPORTANT:
+       *
+       * Always take skills from the CURRENT
+       * uploaded/analyzed resume.
+       *
+       * Nothing is hardcoded here.
+       */
+
+      const userSkills =
+        Array.isArray(
+          result.skills
+        )
+          ? [
+              ...result.skills
+            ]
+          : [];
+
+
+      if (
+        userSkills.length === 0
+      ) {
+
+        alert(
+          "No skills were detected from the current resume. Please upload another resume."
+        );
+
+        return;
+      }
+
+
+      setStarting(
+        true
       );
 
-      setCurrent(0);
-      setStarted(true);
-      setCompleted(false);
-      setScores([]);
-      setAnswer("");
-      setFeedback(null);
 
-      countedQuestionsRef.current =
-        new Set();
+      try {
 
-    } catch (error) {
-      console.error(
-        "Start interview error:",
-        error
-      );
+        console.log(
+          "================================"
+        );
 
-      console.error(
-        "Mock interview backend response:",
-        error.response?.data
-      );
 
-      alert(
-        error.response?.data?.detail ||
-        error.response?.data?.message ||
-        "Failed to start mock interview. Please check the backend connection."
-      );
-    } finally {
-      setStarting(false);
-    }
-  };
+        console.log(
+          "MOCK INTERVIEW START"
+        );
+
+
+        console.log(
+          "CURRENT RESUME ID:",
+          result.resume_id
+        );
+
+
+        console.log(
+          "CURRENT RESUME SKILLS:",
+          userSkills
+        );
+
+
+        console.log(
+          "CURRENT RESUME TEXT:",
+          result.resume_text
+        );
+
+
+        console.log(
+          "CURRENT RESUME ROLES:",
+          result.roles
+        );
+
+
+        console.log(
+          "================================"
+        );
+
+
+        /*
+         * SEND CURRENT RESUME CONTEXT
+         * TO BACKEND.
+         */
+
+        const res =
+          await startMockInterview({
+
+            skills:
+              userSkills,
+
+
+            resume_text:
+              result.resume_text ||
+              "",
+
+
+            resume_id:
+              result.resume_id ||
+              "",
+
+
+            roles:
+              Array.isArray(
+                result.roles
+              )
+                ? [
+                    ...result.roles
+                  ]
+                : []
+
+          });
+
+
+        console.log(
+          "MOCK INTERVIEW RESPONSE:",
+          res.data || res
+        );
+
+
+        // ----------------------------------------------------
+        // GET QUESTIONS
+        // ----------------------------------------------------
+
+        const receivedQuestions =
+          res.data?.questions ||
+          res.questions ||
+          [];
+
+
+        if (
+          !Array.isArray(
+            receivedQuestions
+          ) ||
+          receivedQuestions.length ===
+            0
+        ) {
+
+          alert(
+            "No interview questions were generated. Please try again."
+          );
+
+          return;
+        }
+
+
+        // ----------------------------------------------------
+        // START INTERVIEW
+        // ----------------------------------------------------
+
+        setQuestions(
+          receivedQuestions
+        );
+
+
+        setCurrent(
+          0
+        );
+
+
+        setStarted(
+          true
+        );
+
+
+        setCompleted(
+          false
+        );
+
+
+        setScores(
+          []
+        );
+
+
+        setAnswer(
+          ""
+        );
+
+
+        setFeedback(
+          null
+        );
+
+
+        countedQuestionsRef.current =
+          new Set();
+
+
+      } catch (error) {
+
+        console.error(
+          "Start interview error:",
+          error
+        );
+
+
+        console.error(
+          "Mock interview backend response:",
+          error.response?.data
+        );
+
+
+        alert(
+          error.response?.data?.detail ||
+          error.response?.data?.message ||
+          "Failed to start mock interview. Please check the backend connection."
+        );
+
+
+      } finally {
+
+        setStarting(
+          false
+        );
+
+      }
+
+    };
+
 
   // ==========================================================
-  // SPEAK QUESTION
+  // SPEAK QUESTION WHEN QUESTION CHANGES
   // ==========================================================
 
   useEffect(() => {
+
     if (
       started &&
       questions.length > 0 &&
       questions[current]
     ) {
+
       const timer =
-        setTimeout(() => {
-          speak(
-            questions[current]
-          );
-        }, 500);
+        setTimeout(
+          () => {
+
+            speak(
+              questions[current]
+            );
+
+          },
+          500
+        );
+
 
       return () => {
-        clearTimeout(timer);
+
+        clearTimeout(
+          timer
+        );
+
       };
+
     }
+
   }, [
     current,
     questions,
     started
   ]);
 
+
   // ==========================================================
   // SAVE CORRECT ANSWER
   // ==========================================================
 
-  const saveCorrectAnswer = () => {
-    const key =
-      getMockScoreKey();
+  const saveCorrectAnswer =
+    () => {
 
-    const currentCount =
-      Number(
-        localStorage.getItem(key) || 0
+      const key =
+        getMockScoreKey();
+
+
+      const currentCount =
+        Number(
+          localStorage.getItem(
+            key
+          ) || 0
+        );
+
+
+      const newCount =
+        currentCount + 1;
+
+
+      localStorage.setItem(
+        key,
+        String(newCount)
       );
 
-    const newCount =
-      currentCount + 1;
 
-    localStorage.setItem(
-      key,
-      String(newCount)
-    );
+      /*
+       * Keep the old dashboard
+       * compatibility key.
+       */
 
-    /*
-     * Keep existing dashboard
-     * compatibility key.
-     */
-    localStorage.setItem(
-      "mockCorrectAnswers",
-      String(newCount)
-    );
+      localStorage.setItem(
+        "mockCorrectAnswers",
+        String(newCount)
+      );
 
-    window.dispatchEvent(
-      new Event(
-        "dashboardStatsUpdated"
-      )
-    );
-  };
+
+      window.dispatchEvent(
+        new Event(
+          "dashboardStatsUpdated"
+        )
+      );
+
+    };
+
 
   // ==========================================================
   // SUBMIT ANSWER
   // ==========================================================
 
-  const submitAnswer = async () => {
-    if (!answer.trim()) {
-      alert(
-        "Please type or speak your answer first."
-      );
-
-      return;
-    }
-
-    if (!questions[current]) {
-      return;
-    }
-
-    if (loading) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      /*
-       * IMPORTANT:
-       * Send the CURRENT resume context
-       * to evaluation as well.
-       */
-      const res =
-        await evaluateMockInterview({
-          question:
-            questions[current],
-
-          answer:
-            answer,
-
-          skills:
-            Array.isArray(
-              result?.skills
-            )
-              ? result.skills
-              : [],
-
-          resume_text:
-            result?.resume_text ||
-            "",
-
-          resume_id:
-            result?.resume_id ||
-            "",
-
-          roles:
-            Array.isArray(
-              result?.roles
-            )
-              ? result.roles
-              : []
-        });
-
-      console.log(
-        "MOCK EVALUATION RESPONSE:",
-        res.data || res
-      );
-
-      const rawData =
-        res.data || res || {};
-
-      const evaluationData =
-        rawData.evaluation ||
-        rawData.data ||
-        (
-          typeof rawData.result ===
-            "object" &&
-          rawData.result !== null
-            ? rawData.result
-            : rawData
-        );
-
-      const extractedScore =
-        evaluationData.score ??
-        evaluationData.overall_score ??
-        evaluationData.rating ??
-        evaluationData.final_score ??
-        rawData.score ??
-        rawData.overall_score ??
-        rawData.rating ??
-        rawData.final_score ??
-        0;
-
-      const score =
-        Number(extractedScore) || 0;
-
-      const extractedFeedback =
-        evaluationData.feedback ??
-        evaluationData.feedback_text ??
-        evaluationData.detailed_feedback ??
-        evaluationData.comments ??
-        evaluationData.comment ??
-        evaluationData.message ??
-        rawData.feedback ??
-        rawData.feedback_text ??
-        rawData.detailed_feedback ??
-        rawData.comments ??
-        rawData.comment ??
-        rawData.message ??
-        (
-          typeof rawData.result ===
-          "string"
-            ? rawData.result
-            : ""
-        );
-
-      let feedbackText =
-        extractedFeedback;
+  const submitAnswer =
+    async () => {
 
       if (
-        typeof feedbackText ===
-          "object" &&
-        feedbackText !== null
+        !answer.trim()
       ) {
-        feedbackText =
-          JSON.stringify(
-            feedbackText,
-            null,
-            2
+
+        alert(
+          "Please type or speak your answer first."
+        );
+
+        return;
+      }
+
+
+      if (
+        !questions[current]
+      ) {
+
+        return;
+      }
+
+
+      if (loading) {
+
+        return;
+      }
+
+
+      setLoading(
+        true
+      );
+
+
+      try {
+
+        /*
+         * IMPORTANT:
+         *
+         * Evaluation also receives the
+         * CURRENT resume context.
+         */
+
+        const res =
+          await evaluateMockInterview({
+
+            question:
+              questions[current],
+
+
+            answer:
+              answer,
+
+
+            skills:
+              Array.isArray(
+                result?.skills
+              )
+                ? [
+                    ...result.skills
+                  ]
+                : [],
+
+
+            resume_text:
+              result?.resume_text ||
+              "",
+
+
+            resume_id:
+              result?.resume_id ||
+              "",
+
+
+            roles:
+              Array.isArray(
+                result?.roles
+              )
+                ? [
+                    ...result.roles
+                  ]
+                : []
+
+          });
+
+
+        console.log(
+          "MOCK EVALUATION RESPONSE:",
+          res.data || res
+        );
+
+
+        // ====================================================
+        // RAW RESPONSE
+        // ====================================================
+
+        const rawData =
+          res.data ||
+          res ||
+          {};
+
+
+        // ====================================================
+        // HANDLE DIFFERENT BACKEND STRUCTURES
+        // ====================================================
+
+        const evaluationData =
+          rawData.evaluation ||
+          rawData.data ||
+          (
+            typeof rawData.result ===
+              "object" &&
+            rawData.result !==
+              null
+              ? rawData.result
+              : rawData
           );
-      }
 
-      if (
-        !feedbackText ||
-        String(
-          feedbackText
-        ).trim() === ""
-      ) {
-        feedbackText =
-          "Evaluation was completed, but no detailed feedback was returned by the backend.";
-      }
 
-      const normalizedFeedback = {
-        ...evaluationData,
+        // ====================================================
+        // EXTRACT SCORE
+        // ====================================================
 
-        score,
+        const extractedScore =
+          evaluationData.score ??
+          evaluationData.overall_score ??
+          evaluationData.rating ??
+          evaluationData.final_score ??
+          rawData.score ??
+          rawData.overall_score ??
+          rawData.rating ??
+          rawData.final_score ??
+          0;
 
-        feedback:
+
+        const score =
+          Number(
+            extractedScore
+          ) || 0;
+
+
+        // ====================================================
+        // EXTRACT FEEDBACK
+        // ====================================================
+
+        const extractedFeedback =
+          evaluationData.feedback ??
+          evaluationData.feedback_text ??
+          evaluationData.detailed_feedback ??
+          evaluationData.comments ??
+          evaluationData.comment ??
+          evaluationData.message ??
+          rawData.feedback ??
+          rawData.feedback_text ??
+          rawData.detailed_feedback ??
+          rawData.comments ??
+          rawData.comment ??
+          rawData.message ??
+          (
+            typeof rawData.result ===
+            "string"
+              ? rawData.result
+              : ""
+          );
+
+
+        // ====================================================
+        // SAFELY CONVERT FEEDBACK TO STRING
+        // ====================================================
+
+        let feedbackText =
+          extractedFeedback;
+
+
+        if (
+          typeof feedbackText ===
+            "object" &&
+          feedbackText !==
+            null
+        ) {
+
+          feedbackText =
+            JSON.stringify(
+              feedbackText,
+              null,
+              2
+            );
+
+        }
+
+
+        if (
+          !feedbackText ||
           String(
             feedbackText
-          ),
+          ).trim() === ""
+        ) {
 
-        correct:
-          evaluationData.correct ??
-          evaluationData.is_correct ??
-          rawData.correct ??
-          rawData.is_correct ??
-          false
-      };
+          feedbackText =
+            "Evaluation was completed, but no detailed feedback was returned by the backend.";
 
-      setFeedback(
-        normalizedFeedback
-      );
+        }
 
-      const updatedScores = [
-        ...scores,
-        score
-      ];
 
-      setScores(
-        updatedScores
-      );
+        // ====================================================
+        // NORMALIZED FEEDBACK
+        // ====================================================
 
-      const isCorrect =
-        normalizedFeedback.correct ===
-          true ||
-        normalizedFeedback.is_correct ===
-          true ||
-        String(
-          normalizedFeedback.result ||
-          ""
-        ).toLowerCase() ===
-          "correct" ||
-        score >= 7;
+        const normalizedFeedback = {
 
-      if (
-        isCorrect &&
-        !countedQuestionsRef.current.has(
-          current
-        )
-      ) {
-        saveCorrectAnswer();
+          ...evaluationData,
 
-        countedQuestionsRef.current.add(
-          current
+
+          score:
+            score,
+
+
+          feedback:
+            String(
+              feedbackText
+            ),
+
+
+          correct:
+            evaluationData.correct ??
+            evaluationData.is_correct ??
+            rawData.correct ??
+            rawData.is_correct ??
+            false
+
+        };
+
+
+        console.log(
+          "NORMALIZED MOCK EVALUATION:",
+          normalizedFeedback
         );
-      }
 
-      if (
-        current >=
-        questions.length - 1
-      ) {
-        const average =
-          updatedScores.length > 0
-            ? updatedScores.reduce(
-                (
-                  sum,
-                  value
-                ) =>
-                  sum + value,
-                0
-              ) /
-              updatedScores.length
-            : 0;
 
-        const history =
-          JSON.parse(
-            localStorage.getItem(
-              "interviews"
-            ) || "[]"
+        setFeedback(
+          normalizedFeedback
+        );
+
+
+        // ====================================================
+        // IMPORTANT:
+        // USE THE CURRENT SCORE ARRAY
+        // ====================================================
+
+        const updatedScores = [
+          ...scores,
+          score
+        ];
+
+
+        setScores(
+          updatedScores
+        );
+
+
+        // ====================================================
+        // DETERMINE CORRECT ANSWER
+        // ====================================================
+
+        const isCorrect =
+          normalizedFeedback.correct ===
+            true ||
+
+          normalizedFeedback.is_correct ===
+            true ||
+
+          String(
+            normalizedFeedback.result ||
+            ""
+          )
+            .toLowerCase() ===
+            "correct" ||
+
+          score >= 7;
+
+
+        // ====================================================
+        // COUNT ONLY ONCE
+        // ====================================================
+
+        if (
+          isCorrect &&
+          !countedQuestionsRef.current.has(
+            current
+          )
+        ) {
+
+          saveCorrectAnswer();
+
+
+          countedQuestionsRef.current.add(
+            current
           );
 
-        history.push({
-          date:
-            new Date().toLocaleString(),
+        }
 
-          avg:
-            average.toFixed(1),
 
-          totalQuestions:
-            questions.length,
+        // ====================================================
+        // LAST QUESTION
+        // ====================================================
 
-          resume_id:
-            result?.resume_id ||
-            ""
+        if (
+          current >=
+          questions.length - 1
+        ) {
+
+          /*
+           * Include the current score
+           * immediately because React state
+           * updates asynchronously.
+           */
+
+          const finalScores =
+            updatedScores;
+
+
+          const average =
+            finalScores.length >
+            0
+              ? finalScores.reduce(
+                  (
+                    sum,
+                    value
+                  ) =>
+                    sum + value,
+                  0
+                ) /
+                finalScores.length
+              : 0;
+
+
+          // --------------------------------------------------
+          // INTERVIEW HISTORY
+          // --------------------------------------------------
+
+          const history =
+            JSON.parse(
+              localStorage.getItem(
+                "interviews"
+              ) || "[]"
+            );
+
+
+          history.push({
+
+            date:
+              new Date().toLocaleString(),
+
+
+            avg:
+              average.toFixed(
+                1
+              ),
+
+
+            totalQuestions:
+              questions.length,
+
+
+            /*
+             * Save resume ID so history
+             * belongs to this resume.
+             */
+
+            resume_id:
+              result?.resume_id ||
+              ""
+
+          });
+
+
+          localStorage.setItem(
+            "interviews",
+            JSON.stringify(
+              history
+            )
+          );
+
+
+          /*
+           * Give the user time to read
+           * the final feedback.
+           */
+
+          setTimeout(
+            () => {
+
+              setCompleted(
+                true
+              );
+
+            },
+            1800
+          );
+
+
+        } else {
+
+          /*
+           * Move to the next question
+           * after feedback is visible.
+           */
+
+          setTimeout(
+            () => {
+
+              setAnswer(
+                ""
+              );
+
+
+              setFeedback(
+                null
+              );
+
+
+              setCurrent(
+                (previous) =>
+                  previous + 1
+              );
+
+            },
+            1800
+          );
+
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Mock evaluation error:",
+          error
+        );
+
+
+        console.error(
+          "Mock backend response:",
+          error.response?.data
+        );
+
+
+        setFeedback({
+
+          score:
+            0,
+
+
+          feedback:
+            error.response?.data?.detail ||
+            error.response?.data?.message ||
+            "Unable to evaluate the answer. Please check the backend connection."
+
         });
 
-        localStorage.setItem(
-          "interviews",
-          JSON.stringify(
-            history
-          )
+
+      } finally {
+
+        setLoading(
+          false
         );
 
-        setTimeout(() => {
-          setCompleted(true);
-        }, 1800);
-
-      } else {
-        setTimeout(() => {
-          setAnswer("");
-          setFeedback(null);
-
-          setCurrent(
-            (previous) =>
-              previous + 1
-          );
-        }, 1800);
       }
 
-    } catch (error) {
-      console.error(
-        "Mock evaluation error:",
-        error
-      );
+    };
 
-      console.error(
-        "Mock backend response:",
-        error.response?.data
-      );
-
-      setFeedback({
-        score: 0,
-
-        feedback:
-          error.response?.data?.detail ||
-          error.response?.data?.message ||
-          "Unable to evaluate the answer. Please check the backend connection."
-      });
-
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ==========================================================
-  // FINISH
+  // FINISH INTERVIEW
   // ==========================================================
 
-  const finishInterview = () => {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
+  const finishInterview =
+    () => {
 
-    navigate("/");
-  };
+      if (
+        window.speechSynthesis
+      ) {
+
+        window.speechSynthesis.cancel();
+
+      }
+
+
+      navigate(
+        "/"
+      );
+
+    };
+
 
   // ==========================================================
   // NO RESUME
   // ==========================================================
 
   if (!result) {
+
     return (
-      <div className="mock-page">
 
-        <div className="mock-empty-card">
+      <div
+        className="mock-page"
+      >
 
-          <div className="mock-empty-icon">
+        <div
+          className=
+            "mock-empty-card"
+        >
+
+          <div
+            className=
+              "mock-empty-icon"
+          >
             🎤
           </div>
+
 
           <h2>
             Upload Resume First
           </h2>
+
 
           <p>
             Upload and analyze your resume
             before starting the AI Mock Interview.
           </p>
 
+
           <button
             onClick={() =>
-              navigate("/resume")
+              navigate(
+                "/resume"
+              )
             }
           >
             Upload Resume
@@ -667,56 +1224,91 @@ function MockInterview({ result }) {
         </div>
 
       </div>
+
     );
+
   }
 
+
   // ==========================================================
-  // COMPLETED
+  // COMPLETED SCREEN
   // ==========================================================
 
   if (completed) {
+
     const average =
       scores.length > 0
         ? scores.reduce(
-            (a, b) =>
+            (
+              a,
+              b
+            ) =>
               a + b,
             0
           ) /
           scores.length
         : 0;
 
+
     return (
-      <div className="mock-page">
 
-        <div className="mock-result-card">
+      <div
+        className="mock-page"
+      >
 
-          <div className="result-icon">
+        <div
+          className=
+            "mock-result-card"
+        >
+
+          <div
+            className=
+              "result-icon"
+          >
             🎉
           </div>
+
 
           <h1>
             Mock Interview Completed
           </h1>
+
 
           <p>
             Great job! You completed all{" "}
             {questions.length} interview questions.
           </p>
 
-          <div className="final-score">
+
+          <div
+            className=
+              "final-score"
+          >
 
             <span>
               Final Score
             </span>
 
+
             <strong>
-              {average.toFixed(1)}
-              <small>/10</small>
+
+              {average.toFixed(
+                1
+              )}
+
+              <small>
+                /10
+              </small>
+
             </strong>
 
           </div>
 
-          <div className="score-list">
+
+          <div
+            className=
+              "score-list"
+          >
 
             {scores.map(
               (
@@ -726,13 +1318,15 @@ function MockInterview({ result }) {
 
                 <div
                   key={index}
-                  className="score-item"
+                  className=
+                    "score-item"
                 >
 
                   <span>
                     Question{" "}
                     {index + 1}
                   </span>
+
 
                   <strong>
                     {score}/10
@@ -745,8 +1339,10 @@ function MockInterview({ result }) {
 
           </div>
 
+
           <button
-            className="dashboard-return-btn"
+            className=
+              "dashboard-return-btn"
             onClick={
               finishInterview
             }
@@ -757,86 +1353,32 @@ function MockInterview({ result }) {
         </div>
 
       </div>
+
     );
+
   }
+
 
   // ==========================================================
   // START SCREEN
   // ==========================================================
 
   if (!started) {
+
     return (
-      <div className="mock-page">
 
-        <div className="mock-start-card">
+      <div
+        className="mock-page"
+      >
 
-          <div
-            style={{
-              marginBottom: "20px"
-            }}
-          >
-
-            <h2>
-              AI Mock Interview
-            </h2>
-
-            <p>
-              Questions will be generated
-              from your current resume.
-            </p>
-
-          </div>
-
-          {Array.isArray(
-            result.skills
-          ) &&
-            result.skills.length > 0 && (
-
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "8px",
-                  justifyContent:
-                    "center",
-                  marginBottom:
-                    "24px"
-                }}
-              >
-
-                {result.skills.map(
-                  (
-                    skill,
-                    index
-                  ) => (
-
-                    <span
-                      key={index}
-                      style={{
-                        padding:
-                          "6px 12px",
-                        borderRadius:
-                          "20px",
-                        background:
-                          "#eef7ef",
-                        color:
-                          "#218838",
-                        fontSize:
-                          "13px"
-                      }}
-                    >
-                      {skill}
-                    </span>
-
-                  )
-                )}
-
-              </div>
-
-            )}
+        <div
+          className=
+            "mock-start-card"
+        >
 
           <button
-            className="start-btn"
+            className=
+              "start-btn"
             onClick={
               startInterview
             }
@@ -844,27 +1386,46 @@ function MockInterview({ result }) {
               starting
             }
           >
+
             {starting
               ? "Preparing Interview..."
               : "Start Mock Interview 🎤"}
+
           </button>
 
         </div>
 
       </div>
+
     );
+
   }
+
 
   // ==========================================================
   // INTERVIEW SCREEN
   // ==========================================================
 
   return (
-    <div className="mock-page">
 
-      <div className="mock-container">
+    <div
+      className="mock-page"
+    >
 
-        <div className="mock-header">
+      <div
+        className=
+          "mock-container"
+      >
+
+
+        {/* ====================================================
+            HEADER
+        ==================================================== */}
+
+        <div
+          className=
+            "mock-header"
+        >
 
           <div>
 
@@ -872,19 +1433,26 @@ function MockInterview({ result }) {
               Mock Interview
             </h1>
 
+
             <p>
               Answer by typing or using your voice.
             </p>
 
           </div>
 
-          <div className="progress-box">
+
+          <div
+            className=
+              "progress-box"
+          >
 
             Question
+
 
             <strong>
               {current + 1}
             </strong>
+
 
             <span>
               / {questions.length}
@@ -894,15 +1462,28 @@ function MockInterview({ result }) {
 
         </div>
 
-        <div className="progress-track">
+
+        {/* ====================================================
+            PROGRESS BAR
+        ==================================================== */}
+
+        <div
+          className=
+            "progress-track"
+        >
 
           <div
-            className="progress-fill"
+            className=
+              "progress-fill"
             style={{
               width:
                 `${
-                  ((current + 1) /
-                    questions.length) *
+                  (
+                    (
+                      current + 1
+                    ) /
+                    questions.length
+                  ) *
                   100
                 }%`
             }}
@@ -910,16 +1491,29 @@ function MockInterview({ result }) {
 
         </div>
 
-        <div className="mock-question-card">
 
-          <div className="question-label">
+        {/* ====================================================
+            QUESTION CARD
+        ==================================================== */}
+
+        <div
+          className=
+            "mock-question-card"
+        >
+
+          <div
+            className=
+              "question-label"
+          >
 
             <span>
               🎤 AI Interviewer
             </span>
 
+
             <button
-              className="replay-btn"
+              className=
+                "replay-btn"
               onClick={() =>
                 speak(
                   questions[current]
@@ -931,11 +1525,16 @@ function MockInterview({ result }) {
 
           </div>
 
+
           <h2>
             {questions[current]}
           </h2>
 
-          <p className="question-hint">
+
+          <p
+            className=
+              "question-hint"
+          >
             Listen to the question or
             read it above, then submit your
             answer.
@@ -943,13 +1542,25 @@ function MockInterview({ result }) {
 
         </div>
 
-        <div className="answer-card">
 
-          <div className="answer-header">
+        {/* ====================================================
+            ANSWER CARD
+        ==================================================== */}
+
+        <div
+          className=
+            "answer-card"
+        >
+
+          <div
+            className=
+              "answer-header"
+          >
 
             <h3>
               Your Answer
             </h3>
+
 
             <span>
               Type or speak
@@ -957,44 +1568,68 @@ function MockInterview({ result }) {
 
           </div>
 
+
           <textarea
-            value={answer}
+            value={
+              answer
+            }
             onChange={(e) =>
               setAnswer(
                 e.target.value
               )
             }
-            placeholder="Type your interview answer here..."
-            disabled={loading}
+            placeholder=
+              "Type your interview answer here..."
+            disabled={
+              loading
+            }
           />
 
-          <div className="answer-actions">
+
+          <div
+            className=
+              "answer-actions"
+          >
 
             <button
-              className="voice-btn"
+              className=
+                "voice-btn"
               onClick={
                 startVoice
               }
-              disabled={loading}
+              disabled={
+                loading
+              }
             >
               🎙️ Speak Answer
             </button>
 
+
             <button
-              className="submit-answer-btn"
+              className=
+                "submit-answer-btn"
               onClick={
                 submitAnswer
               }
-              disabled={loading}
+              disabled={
+                loading
+              }
             >
+
               {loading
                 ? "AI Evaluating..."
                 : "Submit Answer →"}
+
             </button>
 
           </div>
 
         </div>
+
+
+        {/* ====================================================
+            FEEDBACK
+        ==================================================== */}
 
         {feedback && (
 
@@ -1014,11 +1649,13 @@ function MockInterview({ result }) {
                   AI FEEDBACK
                 </span>
 
+
                 <h3>
                   Answer Evaluation
                 </h3>
 
               </div>
+
 
               <div
                 className=
@@ -1028,6 +1665,7 @@ function MockInterview({ result }) {
                 {feedback.score ||
                   0}
 
+
                 <small>
                   /10
                 </small>
@@ -1035,6 +1673,7 @@ function MockInterview({ result }) {
               </div>
 
             </div>
+
 
             <div
               className=
@@ -1053,7 +1692,10 @@ function MockInterview({ result }) {
       </div>
 
     </div>
+
   );
+
 }
+
 
 export default MockInterview;
