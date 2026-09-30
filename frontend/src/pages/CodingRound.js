@@ -434,8 +434,6 @@ function CodingRound({ result }) {
 
     fetchQuestions();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-
   }, [
     currentResumeId
   ]);
