@@ -30,6 +30,11 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://carrer-forge-ai-git-main-suhas3.vercel.app",
+
+        # Capacitor Android
+        "http://localhost",
+        "https://localhost",
+        "capacitor://localhost",
     ],
     allow_credentials=True,
     allow_methods=["*"],
