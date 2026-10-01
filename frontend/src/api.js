@@ -3,10 +3,20 @@ import axios from "axios";
 // ==========================================================
 // BACKEND API URL
 // ==========================================================
-
-const API =
+//
+// React reads REACT_APP_API_URL at BUILD TIME.
+//
+// Production:
+// https://careerforge-ai-backend-hr0g.onrender.com
+//
+// The production URL is also used as a fallback so that the
+// Android APK will NOT accidentally try to connect to
+// localhost:8000.
+//
+const API = (
   process.env.REACT_APP_API_URL ||
-  "http://localhost:8000";
+  "https://careerforge-ai-backend-hr0g.onrender.com"
+).replace(/\/+$/, "");
 
 console.log("CareerForge AI API:", API);
 
@@ -21,7 +31,6 @@ export const registerUser = async (data) => {
     const response = await axios.post(
       `${API}/auth/register`,
       {
-        // Backend expects "name"
         name: data.name,
         email: data.email,
         password: data.password,
@@ -31,7 +40,6 @@ export const registerUser = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Registration Error:",
       error.response?.data || error.message
@@ -45,7 +53,6 @@ export const registerUser = async (data) => {
 // Login
 export const loginUser = async (data) => {
   try {
-
     const response = await axios.post(
       `${API}/auth/login`,
       data
@@ -54,7 +61,6 @@ export const loginUser = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Login Error:",
       error.response?.data || error.message
@@ -68,7 +74,6 @@ export const loginUser = async (data) => {
 // Get current logged-in user
 export const getCurrentUser = async (token) => {
   try {
-
     const response = await axios.get(
       `${API}/auth/me`,
       {
@@ -81,7 +86,6 @@ export const getCurrentUser = async (token) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Current User Error:",
       error.response?.data || error.message
@@ -97,13 +101,11 @@ export const getCurrentUser = async (token) => {
 // ==========================================================
 
 export const analyzeResume = async (file) => {
-
   const formData = new FormData();
 
   formData.append("file", file);
 
   try {
-
     const response = await axios.post(
       `${API}/analyze`,
       formData,
@@ -117,7 +119,6 @@ export const analyzeResume = async (file) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Resume Analysis Error:",
       error.response?.data || error.message
@@ -133,9 +134,7 @@ export const analyzeResume = async (file) => {
 // ==========================================================
 
 export const interviewChat = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/interview-chat`,
       data
@@ -144,7 +143,6 @@ export const interviewChat = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Interview Chat Error:",
       error.response?.data || error.message
@@ -160,9 +158,7 @@ export const interviewChat = async (data) => {
 // ==========================================================
 
 export const jobChat = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/job-chat`,
       data
@@ -171,7 +167,6 @@ export const jobChat = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Job Chat Error:",
       error.response?.data || error.message
@@ -188,9 +183,7 @@ export const jobChat = async (data) => {
 
 // Start Mock Interview
 export const startMockInterview = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/mock/start`,
       data
@@ -199,7 +192,6 @@ export const startMockInterview = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Start Mock Interview Error:",
       error.response?.data || error.message
@@ -212,9 +204,7 @@ export const startMockInterview = async (data) => {
 
 // Evaluate Mock Interview
 export const evaluateMockInterview = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/mock/evaluate`,
       data
@@ -223,7 +213,6 @@ export const evaluateMockInterview = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Evaluate Mock Interview Error:",
       error.response?.data || error.message
@@ -240,9 +229,7 @@ export const evaluateMockInterview = async (data) => {
 
 // Get Coding Questions
 export const getCodingQuestions = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/coding/questions`,
       data
@@ -251,7 +238,6 @@ export const getCodingQuestions = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Coding Questions Error:",
       error.response?.data || error.message
@@ -264,9 +250,7 @@ export const getCodingQuestions = async (data) => {
 
 // Run Coding
 export const runCoding = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/coding/run`,
       data
@@ -275,7 +259,6 @@ export const runCoding = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Run Coding Error:",
       error.response?.data || error.message
@@ -288,9 +271,7 @@ export const runCoding = async (data) => {
 
 // Evaluate Coding
 export const evaluateCoding = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/coding/evaluate`,
       data
@@ -299,7 +280,6 @@ export const evaluateCoding = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Evaluate Coding Error:",
       error.response?.data || error.message
@@ -316,9 +296,7 @@ export const evaluateCoding = async (data) => {
 
 // Generate Project Recommendations
 export const getProjectRecommendations = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/projects`,
       data
@@ -327,7 +305,6 @@ export const getProjectRecommendations = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Project Recommendations Error:",
       error.response?.data || error.message
@@ -340,9 +317,7 @@ export const getProjectRecommendations = async (data) => {
 
 // Get Projects
 export const getProjects = async () => {
-
   try {
-
     const response = await axios.get(
       `${API}/projects`
     );
@@ -350,7 +325,6 @@ export const getProjects = async () => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Projects Error:",
       error.response?.data || error.message
@@ -363,9 +337,7 @@ export const getProjects = async () => {
 
 // Generate Project Guide
 export const getProjectGuide = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/project-guide`,
       data
@@ -374,7 +346,6 @@ export const getProjectGuide = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Project Guide Error:",
       error.response?.data || error.message
@@ -391,9 +362,7 @@ export const getProjectGuide = async (data) => {
 
 // Filter Jobs
 export const filterJobs = async (data) => {
-
   try {
-
     const response = await axios.post(
       `${API}/jobs/filter`,
       data
@@ -402,7 +371,6 @@ export const filterJobs = async (data) => {
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Job Filter Error:",
       error.response?.data || error.message
