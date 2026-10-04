@@ -5,7 +5,7 @@ import {
   Navigate
 } from "react-router-dom";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import API from "./api";
 import "./App.css";
@@ -23,48 +23,84 @@ import MockInterview from "./pages/MockInterview";
 import CodingRound from "./pages/CodingRound";
 import ProjectGuide from "./pages/ProjectGuide";
 
-function userStorageKey(user) {
-  const email =
-    user?.email ||
-    localStorage.getItem("user_email") ||
-    "guest";
 
-  return `careerforge_resume_context_${String(email)
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "_")}`;
-}
-
-function readSavedResume(user) {
+/*
+ * Clear all resume-related localStorage data.
+ *
+ * This is important because the Android APK uses
+ * WebView localStorage, which persists between logins.
+ */
+function clearResumeStorage() {
   try {
-    const raw =
-      localStorage.getItem(userStorageKey(user)) ||
-      localStorage.getItem(
-        "careerforge_resume_context"
-      );
-
-    return raw ? JSON.parse(raw) : null;
-  } catch (error) {
-    console.error(
-      "Unable to restore resume context:",
-      error
+    localStorage.removeItem(
+      "careerforge_resume_context"
     );
 
-    return null;
+    localStorage.removeItem(
+      "careerforge_resume_id"
+    );
+
+    /*
+     * Remove any old user-specific resume contexts
+     * created by the previous version of the app.
+     */
+    const keysToRemove = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+
+      if (
+        key &&
+        key.startsWith(
+          "careerforge_resume_context_"
+        )
+      ) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach((key) => {
+      localStorage.removeItem(key);
+    });
+
+  } catch (error) {
+    console.error(
+      "Unable to clear resume storage:",
+      error
+    );
   }
 }
+
 
 function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   /*
+   * Resume result exists only for the current login session.
+   *
    * IMPORTANT:
-   * This is the single current-resume context
-   * used by every feature.
+   * We intentionally DO NOT restore an old resume
+   * from localStorage when the user logs in.
    */
-  const [result, setResult] = useState(() =>
-    readSavedResume(null)
-  );
+  const [result, setResult] = useState(null);
+
+  /*
+   * Keeps track of the currently authenticated user.
+   *
+   * This helps us detect:
+   * - new login
+   * - logout
+   * - user change
+   */
+  const previousUserEmail = useRef(null);
+
+
+  /*
+   * =========================
+   * VERIFY AUTHENTICATED USER
+   * =========================
+   */
 
   useEffect(() => {
     let mounted = true;
@@ -73,12 +109,23 @@ function App() {
       const token =
         localStorage.getItem("token");
 
+      /*
+       * No token means there is no active session.
+       */
       if (!token) {
         localStorage.removeItem("user");
 
+        /*
+         * IMPORTANT:
+         * Remove any old resume data.
+         */
+        clearResumeStorage();
+
         if (mounted) {
           setUser(null);
+          setResult(null);
           setAuthLoading(false);
+          previousUserEmail.current = null;
         }
 
         return;
@@ -99,28 +146,65 @@ function App() {
           response.data;
 
         if (mounted) {
+
+          /*
+           * Check whether this is a new login/session.
+           */
+          const currentEmail =
+            currentUser?.email
+              ? String(
+                  currentUser.email
+                ).toLowerCase()
+              : null;
+
+          const oldEmail =
+            previousUserEmail.current;
+
+          /*
+           * If the authenticated user has changed,
+           * clear any old resume data.
+           */
+          if (
+            oldEmail &&
+            currentEmail &&
+            oldEmail !== currentEmail
+          ) {
+            clearResumeStorage();
+            setResult(null);
+          }
+
+          /*
+           * On first authentication, we also start
+           * with a clean resume context.
+           *
+           * This prevents an old APK localStorage value
+           * from appearing after login.
+           */
+          if (!oldEmail) {
+            clearResumeStorage();
+            setResult(null);
+          }
+
+          previousUserEmail.current =
+            currentEmail;
+
           setUser(currentUser);
 
           localStorage.setItem(
             "user",
             JSON.stringify(currentUser)
           );
-
-          const saved =
-            readSavedResume(
-              currentUser
-            );
-
-          if (saved) {
-            setResult(saved);
-          }
         }
+
       } catch (error) {
         console.error(
           "User verification failed:",
           error
         );
 
+        /*
+         * Invalid/expired token.
+         */
         localStorage.removeItem(
           "token"
         );
@@ -129,10 +213,17 @@ function App() {
           "user"
         );
 
+        /*
+         * Clear resume data too.
+         */
+        clearResumeStorage();
+
         if (mounted) {
           setUser(null);
           setResult(null);
+          previousUserEmail.current = null;
         }
+
       } finally {
         if (mounted) {
           setAuthLoading(false);
@@ -147,39 +238,115 @@ function App() {
     };
   }, []);
 
+
   /*
-   * Save ONLY the current resume.
+   * =========================
+   * DETECT LOGIN / LOGOUT
+   * =========================
    *
-   * When a new resume is uploaded,
-   * result is replaced completely.
+   * Login and Register components
+   * can call setUser().
+   *
+   * When the user changes, make sure
+   * the previous user's resume cannot
+   * remain visible.
    */
+
   useEffect(() => {
+
     if (authLoading) {
       return;
     }
 
-    const key =
-      userStorageKey(user);
+    /*
+     * User logged out.
+     */
+    if (!user) {
 
+      setResult(null);
+
+      clearResumeStorage();
+
+      previousUserEmail.current = null;
+
+      return;
+    }
+
+    const currentEmail =
+      user?.email
+        ? String(
+            user.email
+          ).toLowerCase()
+        : null;
+
+    /*
+     * If another user logs in,
+     * remove the previous resume.
+     */
+    if (
+      previousUserEmail.current &&
+      currentEmail &&
+      previousUserEmail.current !== currentEmail
+    ) {
+      setResult(null);
+      clearResumeStorage();
+    }
+
+    previousUserEmail.current =
+      currentEmail;
+
+  }, [
+    user,
+    authLoading
+  ]);
+
+
+  /*
+   * =========================
+   * SAVE CURRENT SESSION DATA
+   * =========================
+   *
+   * We keep the compatibility key while
+   * the user is actively using the application.
+   *
+   * It is cleared when the user logs out
+   * or another user logs in.
+   */
+
+  useEffect(() => {
+
+    if (authLoading) {
+      return;
+    }
+
+    /*
+     * No authenticated user.
+     */
+    if (!user) {
+      clearResumeStorage();
+      return;
+    }
+
+    /*
+     * No resume uploaded yet.
+     */
     if (!result) {
-      localStorage.removeItem(key);
-
       localStorage.removeItem(
         "careerforge_resume_context"
+      );
+
+      localStorage.removeItem(
+        "careerforge_resume_id"
       );
 
       return;
     }
 
     try {
-      localStorage.setItem(
-        key,
-        JSON.stringify(result)
-      );
 
       /*
-       * Compatibility key for
-       * existing components.
+       * Save only the CURRENT user's
+       * current-session resume.
        */
       localStorage.setItem(
         "careerforge_resume_context",
@@ -192,17 +359,26 @@ function App() {
           result.resume_id
         );
       }
+
     } catch (error) {
       console.error(
         "Unable to save resume context:",
         error
       );
     }
+
   }, [
     result,
     user,
     authLoading
   ]);
+
+
+  /*
+   * =========================
+   * ROUTES
+   * =========================
+   */
 
   return (
     <Router>
@@ -232,6 +408,7 @@ function App() {
           }
         />
 
+
         {/* =========================
             REGISTER
         ========================= */}
@@ -253,6 +430,7 @@ function App() {
             )
           }
         />
+
 
         {/* =========================
             PROTECTED ROUTES
@@ -290,6 +468,7 @@ function App() {
               }
             />
 
+
             {/* RESUME / DASHBOARD */}
 
             <Route
@@ -303,6 +482,7 @@ function App() {
               }
             />
 
+
             {/* INTERVIEW */}
 
             <Route
@@ -313,6 +493,7 @@ function App() {
                 />
               }
             />
+
 
             {/* JOBS */}
 
@@ -325,6 +506,7 @@ function App() {
               }
             />
 
+
             {/* MOCK INTERVIEW */}
 
             <Route
@@ -335,6 +517,7 @@ function App() {
                 />
               }
             />
+
 
             {/* CODING */}
 
@@ -347,6 +530,7 @@ function App() {
               }
             />
 
+
             {/* PROJECTS */}
 
             <Route
@@ -357,6 +541,7 @@ function App() {
                 />
               }
             />
+
 
             <Route
               path="/project-guide"
@@ -369,6 +554,7 @@ function App() {
 
           </Route>
         </Route>
+
 
         {/* =========================
             FALLBACK
