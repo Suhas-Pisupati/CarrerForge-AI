@@ -13,6 +13,18 @@ import {
   useNavigate
 } from "react-router-dom";
 
+import {
+  Capacitor
+} from "@capacitor/core";
+
+import {
+  TextToSpeech
+} from "@capacitor-community/text-to-speech";
+
+import {
+  SpeechRecognition
+} from "@capacitor-community/speech-recognition";
+
 import "./MockInterview.css";
 
 
@@ -122,6 +134,92 @@ function MockInterview({ result }) {
 
 
   // ==========================================================
+  // STOP SPEECH RECOGNITION
+  // ==========================================================
+
+  const stopVoiceRecognition = async () => {
+
+    /*
+     * Stop native Android speech recognition.
+     */
+
+    if (
+      Capacitor.isNativePlatform()
+    ) {
+
+      try {
+
+        const listening =
+          await SpeechRecognition.isListening();
+
+        if (
+          listening.listening
+        ) {
+
+          await SpeechRecognition.stop();
+
+        }
+
+      } catch (error) {
+
+        console.log(
+          "Native speech recognition stop error:",
+          error
+        );
+
+      }
+
+    }
+
+  };
+
+
+  // ==========================================================
+  // STOP TEXT TO SPEECH
+  // ==========================================================
+
+  const stopSpeaking = async () => {
+
+    /*
+     * Stop browser speech synthesis.
+     */
+
+    if (
+      window.speechSynthesis
+    ) {
+
+      window.speechSynthesis.cancel();
+
+    }
+
+
+    /*
+     * Stop native Android Text-to-Speech.
+     */
+
+    if (
+      Capacitor.isNativePlatform()
+    ) {
+
+      try {
+
+        await TextToSpeech.stop();
+
+      } catch (error) {
+
+        console.log(
+          "Native TTS stop error:",
+          error
+        );
+
+      }
+
+    }
+
+  };
+
+
+  // ==========================================================
   // RESET INTERVIEW WHEN A NEW RESUME IS UPLOADED
   // ==========================================================
 
@@ -165,13 +263,16 @@ function MockInterview({ result }) {
      * interview question.
      */
 
-    if (
-      window.speechSynthesis
-    ) {
+    stopSpeaking();
 
-      window.speechSynthesis.cancel();
 
-    }
+    /*
+     * Stop any active microphone
+     * recognition session.
+     */
+
+    stopVoiceRecognition();
+
 
   }, [
     result?.resume_id
@@ -182,25 +283,282 @@ function MockInterview({ result }) {
   // SPEECH RECOGNITION
   // ==========================================================
 
-  const startVoice = () => {
+  const startVoice = async () => {
 
-    const SpeechRecognition =
+    /*
+     * Prevent microphone recognition
+     * while AI is evaluating the answer.
+     */
+
+    if (loading) {
+
+      return;
+
+    }
+
+
+    // ========================================================
+    // ANDROID / CAPACITOR
+    // ========================================================
+
+    if (
+      Capacitor.isNativePlatform()
+    ) {
+
+      try {
+
+        console.log(
+          "Starting native Android speech recognition..."
+        );
+
+
+        // ----------------------------------------------------
+        // CHECK IF SPEECH RECOGNITION IS AVAILABLE
+        // ----------------------------------------------------
+
+        const availability =
+          await SpeechRecognition.available();
+
+
+        console.log(
+          "Speech recognition availability:",
+          availability
+        );
+
+
+        if (
+          !availability.available
+        ) {
+
+          alert(
+            "Speech recognition is not available on this device."
+          );
+
+          return;
+
+        }
+
+
+        // ----------------------------------------------------
+        // REQUEST MICROPHONE PERMISSION
+        // ----------------------------------------------------
+
+        let permission =
+          await SpeechRecognition.checkPermissions();
+
+
+        console.log(
+          "Speech recognition permission:",
+          permission
+        );
+
+
+        if (
+          permission.speechRecognition !==
+          "granted"
+        ) {
+
+          permission =
+            await SpeechRecognition.requestPermissions();
+
+
+          console.log(
+            "Updated speech recognition permission:",
+            permission
+          );
+
+        }
+
+
+        if (
+          permission.speechRecognition !==
+          "granted"
+        ) {
+
+          alert(
+            "Microphone permission is required. Please allow microphone access for CareerForge AI in your phone settings."
+          );
+
+          return;
+
+        }
+
+
+        // ----------------------------------------------------
+        // STOP PREVIOUS RECOGNITION SESSION
+        // ----------------------------------------------------
+
+        try {
+
+          const listening =
+            await SpeechRecognition.isListening();
+
+
+          if (
+            listening.listening
+          ) {
+
+            await SpeechRecognition.stop();
+
+          }
+
+        } catch (error) {
+
+          console.log(
+            "Previous recognition session check error:",
+            error
+          );
+
+        }
+
+
+        // ----------------------------------------------------
+        // START NATIVE SPEECH RECOGNITION
+        // ----------------------------------------------------
+
+        console.log(
+          "Listening for your answer..."
+        );
+
+
+        const result =
+          await SpeechRecognition.start({
+
+            language:
+              "en-US",
+
+
+            maxResults:
+              1,
+
+
+            prompt:
+              "Speak your interview answer",
+
+
+            partialResults:
+              false,
+
+
+            popup:
+              false
+
+          });
+
+
+        console.log(
+          "Native speech recognition result:",
+          result
+        );
+
+
+        // ----------------------------------------------------
+        // GET SPOKEN TEXT
+        // ----------------------------------------------------
+
+        const matches =
+          result?.matches ||
+          [];
+
+
+        if (
+          Array.isArray(matches) &&
+          matches.length > 0
+        ) {
+
+          const transcript =
+            String(
+              matches[0]
+            ).trim();
+
+
+          console.log(
+            "Recognized answer:",
+            transcript
+          );
+
+
+          if (
+            transcript
+          ) {
+
+            setAnswer(
+              (previous) => {
+
+                if (
+                  previous.trim()
+                ) {
+
+                  return `${previous} ${transcript}`;
+
+                }
+
+
+                return transcript;
+
+              }
+            );
+
+          }
+
+        } else {
+
+          console.log(
+            "No speech result received."
+          );
+
+
+          alert(
+            "I couldn't hear your answer. Please tap 'Speak Answer' and try again."
+          );
+
+        }
+
+
+        return;
+
+      } catch (error) {
+
+        console.error(
+          "Native Android speech recognition error:",
+          error
+        );
+
+
+        alert(
+          "Unable to use the microphone. Please make sure microphone permission is allowed and try again."
+        );
+
+
+        return;
+
+      }
+
+    }
+
+
+    // ========================================================
+    // WEBSITE / BROWSER SPEECH RECOGNITION
+    // ========================================================
+
+    const SpeechRecognitionAPI =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
 
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionAPI) {
 
       alert(
         "Voice recognition is not supported in this browser. Please use Google Chrome."
       );
 
       return;
+
     }
 
 
     const recognition =
-      new SpeechRecognition();
+      new SpeechRecognitionAPI();
 
 
     recognition.lang =
@@ -218,7 +576,7 @@ function MockInterview({ result }) {
     recognition.onstart = () => {
 
       console.log(
-        "Voice recognition started"
+        "Browser voice recognition started"
       );
 
     };
@@ -257,7 +615,7 @@ function MockInterview({ result }) {
       (event) => {
 
         console.error(
-          "Speech recognition error:",
+          "Browser speech recognition error:",
           event.error
         );
 
@@ -267,7 +625,7 @@ function MockInterview({ result }) {
     recognition.onend = () => {
 
       console.log(
-        "Voice recognition ended"
+        "Browser voice recognition ended"
       );
 
     };
@@ -280,7 +638,7 @@ function MockInterview({ result }) {
     } catch (error) {
 
       console.error(
-        "Unable to start speech recognition:",
+        "Unable to start browser speech recognition:",
         error
       );
 
@@ -293,7 +651,7 @@ function MockInterview({ result }) {
   // TEXT TO SPEECH
   // ==========================================================
 
-  const speak = (
+  const speak = async (
     text
   ) => {
 
@@ -302,37 +660,157 @@ function MockInterview({ result }) {
     }
 
 
+    /*
+     * Always stop any previous speech
+     * before starting the new question.
+     */
+
+    await stopSpeaking();
+
+
+    // ========================================================
+    // ANDROID / CAPACITOR
+    // ========================================================
+
     if (
-      !window.speechSynthesis
+      Capacitor.isNativePlatform()
     ) {
-      return;
+
+      try {
+
+        console.log(
+          "Using native Android Text-to-Speech"
+        );
+
+
+        await TextToSpeech.speak({
+
+          text:
+            String(text),
+
+
+          lang:
+            "en-US",
+
+
+          rate:
+            0.95,
+
+
+          pitch:
+            1.0,
+
+
+          volume:
+            1.0
+
+        });
+
+
+        return;
+
+      } catch (error) {
+
+        console.error(
+          "Native Android TTS error:",
+          error
+        );
+
+        /*
+         * If native TTS fails, continue to
+         * browser TTS as a fallback.
+         */
+
+      }
+
     }
 
 
-    window.speechSynthesis.cancel();
+    // ========================================================
+    // WEBSITE / BROWSER TTS
+    // ========================================================
+
+    if (
+      !window.speechSynthesis
+    ) {
+
+      console.error(
+        "Speech synthesis is not supported."
+      );
+
+      return;
+
+    }
 
 
-    const speech =
-      new SpeechSynthesisUtterance(
-        text
+    try {
+
+      const speech =
+        new SpeechSynthesisUtterance(
+          String(text)
+        );
+
+
+      speech.lang =
+        "en-US";
+
+
+      speech.rate =
+        0.95;
+
+
+      speech.pitch =
+        1;
+
+
+      speech.volume =
+        1;
+
+
+      /*
+       * Try to select an English voice
+       * when available.
+       */
+
+      const voices =
+        window.speechSynthesis.getVoices();
+
+
+      const englishVoice =
+        voices.find(
+          (voice) =>
+            voice.lang &&
+            voice.lang
+              .toLowerCase()
+              .startsWith(
+                "en"
+              )
+        );
+
+
+      if (
+        englishVoice
+      ) {
+
+        speech.voice =
+          englishVoice;
+
+      }
+
+
+      window.speechSynthesis.speak(
+        speech
       );
 
 
-    speech.lang =
-      "en-US";
+    } catch (error) {
 
+      console.error(
+        "Browser Text-to-Speech error:",
+        error
+      );
 
-    speech.rate =
-      0.95;
-
-
-    speech.pitch =
-      1;
-
-
-    window.speechSynthesis.speak(
-      speech
-    );
+    }
 
   };
 
@@ -707,6 +1185,14 @@ function MockInterview({ result }) {
 
         return;
       }
+
+
+      /*
+       * Stop microphone recognition
+       * before sending the answer.
+       */
+
+      await stopVoiceRecognition();
 
 
       setLoading(
@@ -1159,13 +1645,9 @@ function MockInterview({ result }) {
   const finishInterview =
     () => {
 
-      if (
-        window.speechSynthesis
-      ) {
+      stopSpeaking();
 
-        window.speechSynthesis.cancel();
-
-      }
+      stopVoiceRecognition();
 
 
       navigate(
@@ -1662,8 +2144,7 @@ function MockInterview({ result }) {
                   "feedback-score"
               >
 
-                {feedback.score ||
-                  0}
+                {feedback.score || 0}
 
 
                 <small>
