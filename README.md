@@ -110,7 +110,7 @@ Practice a complete AI-powered mock interview.
 - Answer feedback
 - Score generation
 - Progress tracking
-- 10-question mock interview
+- 20-question mock interview
 
 ---
 
